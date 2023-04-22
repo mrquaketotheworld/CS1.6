@@ -3,7 +3,7 @@
  ["src" ]
 
  :dependencies
- [[cider/cider-nrepl "0.30.0"]]
+ []
 
  :builds
  {:script
