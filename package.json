@@ -1,0 +1,13 @@
+{
+  "name": "cs16",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@discordjs/rest": "1.0.1",
+    "discord.js": "14.8.0",
+    "dotenv": "16.0.1"
+  },
+  "devDependencies": {
+    "shadow-cljs": "2.23.1"
+  }
+}

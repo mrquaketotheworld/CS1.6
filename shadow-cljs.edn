@@ -1,0 +1,12 @@
+;; shadow-cljs configuration
+{:source-paths
+ ["src" ]
+
+ :dependencies
+ [[cider/cider-nrepl "0.30.0"]]
+
+ :builds
+ {:script
+  {:target :node-script
+   :main core/main
+   :output-to "out/index.js"}}}
