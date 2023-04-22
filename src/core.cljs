@@ -1,6 +1,7 @@
-(ns core)
+(ns core
+  (:require [commands.deploy-commands :as commands]))
 
-(.log js/console "hello")
 
 (defn main [& args]
+  (commands/register-commands)
   (println "hello world") )
