@@ -3,5 +3,4 @@
 
 
 (defn main [& args]
-  (commands/register-commands)
   (println "hello world") )
