@@ -1,11 +1,8 @@
 (ns commands.deploy-commands
   (:require
-   ["dotenv" :as dotenv]
+   [config :refer [TOKEN CLIENT_ID]]
    ["discord.js" :as discord]))
 
-(def config ((js->clj (.config dotenv)) "parsed"))
-(def TOKEN (config "TOKEN"))
-(def CLIENT_ID (config "CLIENT_ID"))
 
 (def commands [{:name "quote"
                 :description "Show random player's quote!"}
