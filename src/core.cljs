@@ -1,7 +1,8 @@
 (ns core
-  (:require [config :refer [TOKEN]]
-            ["discord.js" :as discord]
-            [commands.quote :as quote]))
+  (:require ["discord.js" :as discord]
+            [config :refer [TOKEN]]
+            [commands.quote :as quote]
+            [commands.make-random-teams :as make-random-teams]))
 
 (def client (new discord/Client #js {:intents #js [(.-Guilds discord/GatewayIntentBits)
                                                    (.-GuildVoiceStates discord/GatewayIntentBits)]}))
@@ -10,6 +11,7 @@
   (when (.isChatInputCommand interaction)
     (case (.-commandName interaction)
       "quote" (quote/interact! interaction)
+      "make-random-teams"(make-random-teams/interact! interaction)
       (js/console.log "OTHER"))))
 
 (.on client "ready" #(js/console.log  "Ready!" (new js/Date)))

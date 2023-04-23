@@ -12,7 +12,7 @@
                 :description "Run extra map poll!"}
                {:name "go-fun"
                 :description "Run fun map poll!"}
-               {:name "make-teams"
+               {:name "make-random-teams"
                 :description "Make random teams from voice channel!"}])
 
 (defn prepare-commands [command]
