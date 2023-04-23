@@ -9,7 +9,7 @@
 (defn handle-interaction [^js/Object interaction]
   (when (.isChatInputCommand interaction)
     (case (.-commandName interaction)
-      "quote" (quote/quote interaction)
+      "quote" (quote/interact! interaction)
       (js/console.log "OTHER"))))
 
 (.on client "ready" #(js/console.log  "Ready!" (new js/Date)))

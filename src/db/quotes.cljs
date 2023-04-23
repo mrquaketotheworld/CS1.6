@@ -1,7 +1,7 @@
 (ns db.quotes)
 
-(def quotes [
-             ["hello world" "John"]
-             ["What's up!" "Bob"]
-             ["HBD!" "Michael"]
-             ["Happy New Year!" "Edward"]])
+(def data [
+             {:quote "hello world" :author "John"}
+             {:quote "What's up!" :author "Bob"}
+             {:quote "HBD!" :author "Michael"}
+             {:quote "Happy New Year!" :author "Edward"}])
