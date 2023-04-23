@@ -10,9 +10,9 @@
   (when (.isChatInputCommand interaction)
     (case (.-commandName interaction)
       "quote" (quote/quote interaction)
-      (.log js/console "OTHER"))))
+      (js/console.log "OTHER"))))
 
-(.on client "ready" #(.log js/console "Ready!" (new js/Date)))
+(.on client "ready" #(js/console.log  "Ready!" (new js/Date)))
 (.on client "interactionCreate" handle-interaction)
 (.login client TOKEN)
 

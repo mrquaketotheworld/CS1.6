@@ -1,4 +1,4 @@
-(ns data.quotes)
+(ns db.quotes)
 
 (def quotes [
              ["hello world" "John"]
