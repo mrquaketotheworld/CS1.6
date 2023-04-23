@@ -16,7 +16,7 @@
                                                     " \n "
                                                     (:author quote-item))
                                                :components #js []}))
-                 (catch js/Error e (js/console.log "ERROR /quote" e)))))
+                 (catch js/Error e (println "ERROR /quote" e)))))
       (do (reset! counter 0)
         (reset! shuffled-quotes (shuffle quotes/data))
         (recur interaction)))))

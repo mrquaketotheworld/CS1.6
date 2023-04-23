@@ -12,9 +12,9 @@
     (case (.-commandName interaction)
       "quote" (quote/interact! interaction)
       "make-random-teams"(make-random-teams/interact! interaction)
-      (js/console.log "OTHER"))))
+      (println "OTHER"))))
 
-(.on client "ready" #(js/console.log  "Ready!" (new js/Date)))
+(.on client "ready" #(println "Ready!" (new js/Date)))
 (.on client "interactionCreate" handle-interaction)
 (.login client TOKEN)
 

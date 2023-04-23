@@ -29,6 +29,6 @@
 (defn register-commands []
   (.. rest-api
       (put (.applicationCommands discord/Routes CLIENT_ID) #js {:body (clj->js commands-built)})
-      (then #(js/console.log  "Register commands SUCCESS!"))
-      (catch #(js/console.log  "ERROR:" %))))
+      (then #(println "Register commands SUCCESS!"))
+      (catch #(println "ERROR in register-commands:" %))))
 
