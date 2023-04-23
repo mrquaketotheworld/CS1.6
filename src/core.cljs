@@ -16,5 +16,4 @@
 (.on client "interactionCreate" handle-interaction)
 (.login client TOKEN)
 
-(defn main [& args]
-  (println "hello world"))
+(defn main [& args])
