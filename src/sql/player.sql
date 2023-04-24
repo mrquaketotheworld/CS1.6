@@ -2,13 +2,10 @@ CREATE TABLE player (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   discord_id VARCHAR(255) UNIQUE NOT NULL,
-  wins INT DEFAULT 0,
-  losses INT DEFAULT 0,
-  draws INT DEFAULT 0,
   skill INT DEFAULT 32,
   nanax_points INT DEFAULT 0,
-  team VARCHAR(255) DEFAULT 'Free agent',
-  country VARCHAR(255) DEFAULT 'UNKNOWN',
+  team VARCHAR(255),
+  country VARCHAR(255),
   created_at timestamptz DEFAULT NOW(),
   updated_at timestamptz DEFAULT NOW()
 );
