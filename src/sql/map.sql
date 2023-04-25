@@ -5,7 +5,9 @@ CREATE TABLE map (
   is_extra BOOLEAN DEFAULT FALSE,
   is_fun BOOLEAN DEFAULT FALSE,
   created_at timestamptz DEFAULT NOW(),
-  discord_server_id VARCHAR(255) NOT NULL REFERENCES discord_server(discord_server_id) -- FK discord_server discord_server_id, add delete
+  discord_server_id VARCHAR(255)
+    REFERENCES discord_server(discord_server_id)
+    ON DELETE CASCADE-- FK discord_server discord_server_id, add delete
 );
 
 -- add default IDs and maps

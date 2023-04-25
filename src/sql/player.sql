@@ -4,8 +4,8 @@ CREATE TABLE player (
   discord_id VARCHAR(255) NOT NULL UNIQUE,
   skill INT DEFAULT 32,
   nanax_points INT DEFAULT 0,
-  team VARCHAR(255),
-  country VARCHAR(255),
+  team VARCHAR(255) DEFAULT 'UNKNOWN',
+  country VARCHAR(255) DEFAULT 'UNKNOWN',
   created_at timestamptz DEFAULT NOW(),
   updated_at timestamptz DEFAULT NOW()
 );

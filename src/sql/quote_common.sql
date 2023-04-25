@@ -1,4 +1,4 @@
-CREATE TABLE "quote_common" (
+CREATE TABLE quote_common (
   id SERIAL PRIMARY KEY,
   quote TEXT NOT NULL,
   author VARCHAR(255) NOT NULL,
