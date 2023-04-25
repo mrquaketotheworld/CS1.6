@@ -6,5 +6,5 @@ CREATE TABLE team1 (
   player4 VARCHAR(255) NOT NULL,
   player5 VARCHAR(255) NOT NULL,
   created_at timestamptz DEFAULT NOW(),
-  match_id INT NOT NULL UNIQUE -- FK match
+  match_id INT NOT NULL UNIQUE REFERENCES match(id)  -- FK match
 );
