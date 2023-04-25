@@ -1,7 +1,7 @@
 CREATE TABLE player (
   id SERIAL PRIMARY KEY,
+  player_id VARCHAR(255) NOT NULL UNIQUE,
   player_name VARCHAR(255) NOT NULL,
-  discord_id VARCHAR(255) NOT NULL UNIQUE,
   skill INT DEFAULT 32,
   nanax_points INT DEFAULT 0,
   team VARCHAR(255) DEFAULT 'UNKNOWN',
