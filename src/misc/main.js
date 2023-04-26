@@ -5,24 +5,24 @@ registerFont('Military Poster.ttf', { family: 'Military Poster Regular' });
 const canvas = createCanvas(688, 276);
 const ctx = canvas.getContext('2d')
 const colorsRanks = {
-  'Noob': "#ffffff",
+  'Noob': "#BDBDBD",
   'Lucker': "#00ce21",
   'Strawberry Legend': "#ff8413",
   'Drunken Master': "#13f1ff",
-  'Rambo': "#009fd1",
-  'Terminator': "#2c5aff",
-  'Terminator 2': "#c8ff2c",
+  'Rambo': "#c8ff2c",
+  'Terminator': "#009fd1",
+  'Terminator 2': "#2c5aff",
   'Professional': "#a513ff",
   'Legend': "#ffd600",
   'Nanaxer': "#d00a0a",
 };
 
-function makeCtxFirstColumn() {
+function makeContextSecondColumn() {
   ctx.fillStyle = '#d00a0a'
   ctx.globalAlpha = '1';
 }
 
-function makeCtxSecondColumn() {
+function makeContextFirstColumn() {
   ctx.fillStyle = 'white'
   ctx.globalAlpha = '1';
 }
@@ -40,54 +40,52 @@ loadImage('nanax_logo.png').then((image) => {
 
 
 
-  makeCtxSecondColumn();
+  makeContextFirstColumn();
   ctx.fillText('Country', 230, 55)
-  makeCtxFirstColumn();
+  makeContextSecondColumn();
   ctx.fillText('Switzerland', 326, 55)
 
-  makeCtxSecondColumn();
+  makeContextFirstColumn();
   ctx.fillText('Tag', 230, 90)
-  makeCtxFirstColumn();
+  makeContextSecondColumn();
   ctx.fillText('Navi', 326, 90)
 
-  makeCtxSecondColumn();
+  makeContextFirstColumn();
   ctx.fillText('Wins', 490, 55)
-  makeCtxFirstColumn();
+  makeContextSecondColumn();
   ctx.fillText('134534', 572, 55)
 
-  makeCtxSecondColumn();
+  makeContextFirstColumn();
   ctx.fillText('Losses', 490, 90)
-  makeCtxFirstColumn();
+  makeContextSecondColumn();
   ctx.fillText('345', 572, 90)
 
-  makeCtxSecondColumn();
+  makeContextFirstColumn();
   ctx.fillText('Draws', 490, 125)
-  makeCtxFirstColumn();
+  makeContextSecondColumn();
   ctx.fillText('345', 572, 125)
 
-  makeCtxSecondColumn();
+  makeContextFirstColumn();
   ctx.fillText('Total', 490, 160)
-  makeCtxFirstColumn();
+  makeContextSecondColumn();
   ctx.fillText('345343', 572, 160)
 
-  makeCtxSecondColumn();
+  makeContextFirstColumn();
   ctx.fillText('Win Rate', 490, 210)
-  makeCtxFirstColumn();
+  makeContextSecondColumn();
   ctx.fillText('58%', 597, 210)
 
-  makeCtxSecondColumn();
+  makeContextFirstColumn();
   ctx.fillText('Points', 230, 245)
-  makeCtxFirstColumn();
+  makeContextSecondColumn();
   ctx.fillText('332.32', 326, 245)
-  ctx.fillStyle = colorsRanks['Bot'];
-  ctx.fillText('Bot', 230, 210)
+  ctx.fillStyle = colorsRanks['Strawberry Legend'];
+  ctx.fillText('Strawberry Legend', 230, 210)
 
-  makeCtxSecondColumn();
+  makeContextFirstColumn();
   ctx.fillText('NANAX Points', 490, 245)
-  makeCtxFirstColumn();
+  makeContextSecondColumn();
   ctx.fillText('6', 645, 245)
-  ctx.globalAlpha = '0.3';
-  ctx.strokeStyle = 'white'
   ctx.stroke();
 
 }).then(() => {
@@ -95,7 +93,7 @@ loadImage('nanax_logo.png').then((image) => {
     ctx.globalAlpha = '1';
     ctx.drawImage(image, 32, 31, 128, 128);
     ctx.font = '57px "Military Poster"';
-    ctx.fillStyle = colorsRanks['Bot'];
+    ctx.fillStyle = colorsRanks['Strawberry Legend'];
     ctx.fillText('macautribes', 60, 175)
     ctx.fillStyle = 'white';
     ctx.font = '43px "Oswald"';
