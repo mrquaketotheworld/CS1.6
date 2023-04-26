@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@discordjs/rest": "1.0.1",
+    "canvas": "^2.11.2",
     "discord.js": "14.8.0",
     "dotenv": "16.0.1"
   },
