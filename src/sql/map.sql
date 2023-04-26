@@ -7,7 +7,7 @@ CREATE TABLE map (
   created_at timestamptz DEFAULT NOW(),
   discord_server_id VARCHAR(255)
     REFERENCES discord_server(discord_server_id)
-    ON DELETE CASCADE-- FK discord_server discord_server_id, add delete
+    ON DELETE CASCADE
 );
 
 -- add default IDs and maps
