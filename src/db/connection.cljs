@@ -1,18 +1,10 @@
 (ns db.connection
-  (:require ["pg" :as pg]))
+  (:require ["pg" :as pg]
+            [config :refer [PG_USER PG_HOST PG_DATABASE PG_PASSWORD PG_PORT]]))
 
-(defonce pool (new pg/Pool #js {:user "rus"
-                   :host "localhost"
-                   :database "cs16"
-                   :password "hi!"
-                   :port 5432
+(defonce pool (pg/Pool. #js {:user PG_USER
+                   :host PG_HOST
+                   :database PG_DATABASE
+                   :password PG_PASSWORD
+                   :port PG_PORT
                    }))
-
-
-; const pool = new Pool({
-;   user: 'me',
-;   host: 'localhost',
-;   database: 'api',
-;   password: 'password',
-;   port: 5432,
-; })
