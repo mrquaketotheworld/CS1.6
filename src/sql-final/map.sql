@@ -1,5 +1,4 @@
 CREATE TABLE map (
-  id SERIAL PRIMARY KEY,
-  map VARCHAR(100) NOT NULL UNIQUE, -- Nuke
+  map VARCHAR(100) PRIMARY KEY, -- Nuke
   created_at timestamptz DEFAULT NOW() NOT NULL
 );
