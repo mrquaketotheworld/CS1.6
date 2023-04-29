@@ -5,5 +5,5 @@ CREATE TABLE match (
   team2_score INT NOT NULL,
   team1 INT NOT NULL UNIQUE REFERENCES team(id),
   team2 INT NOT NULL UNIQUE REFERENCES team(id),
-  created_at timestamptz DEFAULT NOW()
+  created_at timestamptz DEFAULT NOW() NOT NULL
 );

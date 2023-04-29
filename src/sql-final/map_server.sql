@@ -5,5 +5,5 @@ CREATE TABLE map_server (
   is_main BOOLEAN NOT NULL DEFAULT FALSE,
   is_fun BOOLEAN NOT NULL DEFAULT FALSE,
   is_extra BOOLEAN NOT NULL DEFAULT FALSE,
-  created_at timestamptz DEFAULT NOW()
+  created_at timestamptz DEFAULT NOW() NOT NULL
 );

@@ -2,11 +2,11 @@ CREATE TABLE player (
   id SERIAL PRIMARY KEY,
   player_id VARCHAR(255) NOT NULL UNIQUE,
   player VARCHAR(255) NOT NULL,
-  nanax_points INT DEFAULT 0,
-  tag VARCHAR(255) DEFAULT '?',
-  country VARCHAR(255) DEFAULT '?',
-  created_at timestamptz DEFAULT NOW(),
-  updated_at timestamptz DEFAULT NOW()
+  nanax_points INT DEFAULT 0 NOT NULL,
+  tag VARCHAR(255) DEFAULT '?' NOT NULL,
+  country VARCHAR(255) DEFAULT '?' NOT NULL,
+  created_at timestamptz DEFAULT NOW() NOT NULL,
+  updated_at timestamptz DEFAULT NOW() NOT NULL
 );
 
 CREATE OR REPLACE FUNCTION trigger_set_timestamp()
