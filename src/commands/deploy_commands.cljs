@@ -2,10 +2,11 @@
   (:require
    [config :refer [TOKEN CLIENT_ID]]
    ["discord.js" :as discord]
-   [commands.quote :as quote]))
+   [commands.quote :as quote]
+   [commands.make-teams :as make-teams]))
 
 
-(def commands [quote/builder])
+(def commands [quote/builder make-teams/builder])
 
 (def rest-api (.setToken (discord/REST. #js {:version 10}) TOKEN))
 

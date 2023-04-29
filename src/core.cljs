@@ -2,7 +2,7 @@
   (:require ["discord.js" :as discord]
             [config :refer [TOKEN]]
             [commands.quote :as quote]
-            [commands.make-random-teams :as make-random-teams]
+            [commands.make-teams :as make-teams]
             [commands.deploy-commands :as deploy]))
 
 (def client (discord/Client.
@@ -13,7 +13,7 @@
   (when (.isChatInputCommand interaction)
     (case (.-commandName interaction)
       "quote" (quote/interact! interaction)
-      "make-random-teams"(make-random-teams/interact! interaction)
+      "make-teams"(make-teams/interact! interaction)
       (println "OTHER"))))
 
 (.on client "ready" #(println "Ready!" (js/Date.)))
