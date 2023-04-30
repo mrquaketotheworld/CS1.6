@@ -39,8 +39,34 @@
                            (println "RELEASE CLIENT")))) ; remove TESTING stuff
             (println option)
 
-            (let [maps (atom (.-rows (<p! (map-server/select-maps server-id option))))]
+            (let [maps (.-rows (<p! (map-server/select-maps server-id option)))
+                  guild-id (.. interaction -guild -id)
+                  interaction-id (.-id interaction)]
+              (if (.. interaction -member -voice -channel)
+                (do
+                  (when-not (contains? @state guild-id)
+                    (swap! state
+                           (fn [old-state]
+                                 (assoc old-state
+                                        guild-id
+                                        {:collectors {}
+                                         :interactions {
+                                                interaction-id {
+                                                :maps (js->clj maps)
+                                                :voted-users {}
+                                                :callee-voice-channel-id (.. interaction
+                                                                             -member
+                                                                             -voice
+                                                                             -channel
+                                                                             -id)}}}))))
+                  
+                  ) ; if user in voice, do
+                (<p! (.reply
+                       interaction #js {:content (str "You're not in the voice channel, "
+                                                      (.. interaction -member -user -username))
+                                        :ephemeral true})))
 
+              (println @state)
 
 
 
