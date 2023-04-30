@@ -18,28 +18,55 @@
                                          #js {:name "fun" :value "fun"}))))
       toJSON))
 
+(def state (atom {}))
+
 (defn interact! [^js/Object interaction]
-  (let [option (.. interaction -options (getString "mapmode"))
+  (let [option (or (.. interaction -options (getString "mapmode")) "main")
         server-id (.. interaction -guild -id)
         server-name (.. interaction -guild -name)]
     (go (try
-        (let [client (<p! (.connect db/pool))
+          (let [client (<p! (.connect db/pool))
               server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))]
-          (try
-            (<p! (db/begin-transaction client))
-            (<p! (server/insert-server-if-not-exists client server-id server-name))
-            (when (empty? server-with-maps)
-              (<p! (map-server/insert-default-maps client server-id)))
-            (<p! (db/commit-transaction client))
-            (catch js/Error e (do (println e)
-                                (<p! (db/rollback-transaction client))))
-            (finally (do (.release client)
-                         (println "RELEASE CLIENT")))) ; remove TESTING stuff
+            (try
+              (<p! (db/begin-transaction client))
+              (<p! (server/insert-server-if-not-exists client server-id server-name))
+              (when (empty? server-with-maps)
+                (<p! (map-server/insert-default-maps client server-id)))
+              (<p! (db/commit-transaction client))
+              (catch js/Error e (do (println e)
+                                    (<p! (db/rollback-transaction client))))
+              (finally (do (.release client)
+                           (println "RELEASE CLIENT")))) ; remove TESTING stuff
+            (println option)
 
-          (let [maps (atom (.-rows (case option
-                                "extra" (<p! (map-server/select-extra-maps server-id))
-                                "fun" (<p! (map-server/select-fun-maps server-id))
-                                (<p! (map-server/select-main-maps server-id)))))]
-            (println maps))
+            (let [maps (atom (.-rows (<p! (map-server/select-maps server-id option))))]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+              )
             (<p! (.reply interaction #js {:content "GO COMMAND"})))
           (catch js/Error e (println e))))))
