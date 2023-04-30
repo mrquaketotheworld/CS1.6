@@ -1,4 +1,4 @@
-(ns db.quote
+(ns db.models.quote
   (:require [db.connection :as db]))
 
 

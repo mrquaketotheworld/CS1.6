@@ -2,7 +2,7 @@
   (:require [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
             ["discord.js" :as discord]
-            [db.quote :as quote]))
+            [db.models.quote :as quote]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)

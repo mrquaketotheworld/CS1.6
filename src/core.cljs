@@ -3,6 +3,7 @@
             [config :refer [TOKEN]]
             [commands.quote :as quote]
             [commands.make-teams :as make-teams]
+            [commands.go :as go-command]
             [commands.deploy-commands :as deploy]))
 
 (def client (discord/Client.
@@ -14,6 +15,7 @@
     (case (.-commandName interaction)
       "quote" (quote/interact! interaction)
       "make-teams"(make-teams/interact! interaction)
+      "go"(go-command/interact! interaction)
       (println "OTHER"))))
 
 (.on client "ready" #(println "Ready!" (js/Date.)))
