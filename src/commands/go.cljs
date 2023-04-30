@@ -24,11 +24,11 @@
         server-name (.. interaction -guild -name)]
     (go (try
         (let [client (<p! (.connect db/pool))
-              server-with-maps (<p! (map-server/check-server-with-maps-exists server-id))]
+              server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))]
           (try
             (<p! (db/begin-transaction client))
             (<p! (server/insert-server-if-not-exists client server-id server-name))
-            (when (empty? (.-rows server-with-maps))
+            (when (empty? server-with-maps)
               (<p! (map-server/insert-default-maps client server-id)))
             (<p! (db/commit-transaction client))
             (catch js/Error e (do (println e)
@@ -36,9 +36,10 @@
             (finally (do (.release client)
                          (println "RELEASE CLIENT")))) ; remove TESTING stuff
 
-            ; (case option
-            ;   "extra" (println "extra")
-            ;   "fun" (println "fun")
-            ;   (println "default"))
+          (let [maps (atom (.-rows (case option
+                                "extra" (<p! (map-server/select-extra-maps server-id))
+                                "fun" (<p! (map-server/select-fun-maps server-id))
+                                (<p! (map-server/select-main-maps server-id)))))]
+            (println maps))
             (<p! (.reply interaction #js {:content "GO COMMAND"})))
           (catch js/Error e (println e))))))

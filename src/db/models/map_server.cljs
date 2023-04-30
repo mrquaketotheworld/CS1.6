@@ -49,3 +49,17 @@
 
 (defn check-server-with-maps-exists [server-id]
   (.query db/pool "SELECT * FROM map_server WHERE server_id = $1" #js [server-id]))
+
+(defn select-maps [server-id maptype]
+  (.query db/pool
+      (str "SELECT * FROM map_server WHERE server_id = $1 AND is_" maptype " = true")
+      #js [server-id]))
+
+(defn select-main-maps [server-id]
+  (select-maps server-id "main"))
+
+(defn select-extra-maps [server-id]
+  (select-maps server-id "extra"))
+
+(defn select-fun-maps [server-id]
+  (select-maps server-id "fun"))
