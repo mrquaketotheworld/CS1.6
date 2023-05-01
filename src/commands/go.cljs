@@ -18,6 +18,34 @@
                                          #js {:name "fun" :value "fun"}))))
       toJSON))
 
+(defn create-row [components]
+  (println 'components (clj->js components))
+  (.addComponents (discord/ActionRowBuilder.) (clj->js components)))
+
+(defn create-button [map-name label is-disabled]
+  (println "CREATE" map-name label is-disabled)
+    (.. (discord/ButtonBuilder.)
+        (setCustomId map-name)
+        (setLabel label)
+        (setStyle (.-Primary discord/ButtonStyle))
+        (setDisabled is-disabled)))
+
+(defn create-buttons [maps]
+  (reduce (fn [acc map-group]
+            (conj acc (create-row (into [] (map (fn [map-item]
+                                         (println map-item)
+                                         (create-button
+                                           (:map-name map-item)
+                                           (:map-name map-item)
+                                           (:is-disabled map-item))) map-group)))))
+          [] (partition-all 4 maps)))
+
+(defn format-maps [maps]
+  (map (fn [map-item]
+         {:map-name (map-item "map")
+          :voted-users []
+          :is-disabled false}) maps))
+
 (def state (atom {}))
 
 (defn interact! [^js/Object interaction]
@@ -37,9 +65,9 @@
                                     (<p! (db/rollback-transaction client))))
               (finally (do (.release client)
                            (println "RELEASE CLIENT")))) ; remove TESTING stuff
-            (println option)
 
-            (let [maps (.-rows (<p! (map-server/select-maps server-id option)))
+            (let [maps
+                  (format-maps (js->clj (.-rows (<p! (map-server/select-maps server-id option)))))
                   guild-id (.. interaction -guild -id)
                   interaction-id (.-id interaction)]
               (if (.. interaction -member -voice -channel)
@@ -52,47 +80,19 @@
                                         {:collectors {}
                                          :interactions {
                                                 interaction-id {
-                                                :maps (js->clj maps)
-                                                :voted-users {}
+                                                :maps maps
                                                 :callee-voice-channel-id (.. interaction
                                                                              -member
                                                                              -voice
                                                                              -channel
                                                                              -id)}}}))))
+                  (<p! (.reply interaction #js {:content "GO COMMAND"
+                                                :components (clj->js (create-buttons maps))}))
+                  
                   
                   ) ; if user in voice, do
-                (<p! (.reply
-                       interaction #js {:content (str "You're not in the voice channel, "
-                                                      (.. interaction -member -user -username))
-                                        :ephemeral true})))
-
-              (println @state)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-              )
-            (<p! (.reply interaction #js {:content "GO COMMAND"})))
+                  (<p! (.reply
+                         interaction #js {:content (str "You're not in the voice channel, "
+                                                        (.. interaction -member -user -username))
+                                          :ephemeral true})))))
           (catch js/Error e (println e))))))
