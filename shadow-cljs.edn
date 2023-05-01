@@ -9,4 +9,6 @@
  {:script
   {:target :node-script
    :main core/main
+   :compiler-options {:infer-externs true
+                      :optimizations :advanced}
    :output-to "out/index.js"}}}
