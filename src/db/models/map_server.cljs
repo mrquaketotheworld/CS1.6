@@ -52,5 +52,5 @@
 
 (defn select-maps [server-id maptype]
   (.query db/pool
-      (str "SELECT * FROM map_server WHERE server_id = $1 AND maptype = $2")
+      (str "SELECT * FROM map_server WHERE server_id = $1 AND maptype = $2 ORDER BY map")
       #js [server-id maptype]))

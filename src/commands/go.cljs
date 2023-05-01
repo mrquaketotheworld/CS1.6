@@ -19,32 +19,39 @@
       toJSON))
 
 (defn create-row [components]
-  (println 'components (clj->js components))
   (.addComponents (discord/ActionRowBuilder.) (clj->js components)))
 
 (defn create-button [map-name label is-disabled]
-  (println "CREATE" map-name label is-disabled)
-    (.. (discord/ButtonBuilder.)
-        (setCustomId map-name)
-        (setLabel label)
-        (setStyle (.-Primary discord/ButtonStyle))
-        (setDisabled is-disabled)))
+  (.. (discord/ButtonBuilder.)
+      (setCustomId map-name)
+      (setLabel label)
+      (setStyle (.-Primary discord/ButtonStyle))
+      (setDisabled is-disabled)))
 
 (defn create-buttons [maps]
-  (reduce (fn [acc map-group]
-            (conj acc (create-row (into [] (map (fn [map-item]
-                                         (println map-item)
-                                         (create-button
-                                           (:map-name map-item)
-                                           (:map-name map-item)
-                                           (:is-disabled map-item))) map-group)))))
-          [] (partition-all 4 maps)))
+  (clj->js (reduce (fn [acc map-group]
+             (conj acc (create-row (into [] (map (fn [map-item]
+                                                   (create-button
+                                                     (:map-name map-item)
+                                                     (:map-name map-item)
+                                                     (:is-disabled map-item))) map-group)))))
+           [] (partition-all 4 maps))))
 
 (defn format-maps [maps]
   (map (fn [map-item]
          {:map-name (map-item "map")
           :voted-users []
           :is-disabled false}) maps))
+
+(defn create-reply [title maps]
+  #js {:content title
+       :components (create-buttons maps)})
+
+(defn convert-users-to-string [users]
+  (reduce (fn [acc ^js/Object user]
+            (str acc "<@" (.. user -user -id) ">")) "" users))
+
+(def MAP-QUESTION ":triangular_flag_on_post: **VOTE FOR THE MAP PLEASE**, **1 MINUTE TO VOTE**")
 
 (def state (atom {}))
 
@@ -69,7 +76,8 @@
             (let [maps
                   (format-maps (js->clj (.-rows (<p! (map-server/select-maps server-id option)))))
                   guild-id (.. interaction -guild -id)
-                  interaction-id (.-id interaction)]
+                  interaction-id (.-id interaction)
+                  ]
               (if (.. interaction -member -voice -channel)
                 (do
                   (when-not (contains? @state guild-id)
@@ -86,10 +94,12 @@
                                                                              -voice
                                                                              -channel
                                                                              -id)}}}))))
-                  (<p! (.reply interaction #js {:content "GO COMMAND"
-                                                :components (clj->js (create-buttons maps))}))
-                  
-                  
+                  (<p! (.reply interaction (create-reply MAP-QUESTION maps)))
+                  (let [users-in-voice
+                        (convert-users-to-string (.from js/Array
+                                (.. interaction -member -voice -channel -members values)))]
+
+                    (<p! (.followUp interaction users-in-voice)))
                   ) ; if user in voice, do
                   (<p! (.reply
                          interaction #js {:content (str "You're not in the voice channel, "
