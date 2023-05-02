@@ -67,18 +67,25 @@
 (defmethod create-reply :finish [reply-type content components] {:x "test"})
 
 (defn handle-collector-event! [event]
-  (println "handle event!")
   (let [event-interaction-id (.. event -message -interaction -id)
-        event-guild-id (.-guildId event)
         map-name (.-customId event)
         user-id (.. event -user -id)
         username (.. event -user -username)
-        voice-channel (.. event -member -voice -channel) ]
-    #_(if voice-channel
+        voice-channel (.. event -member -voice -channel)
+        callee-voice-channel-id (get-in @state
+                                    [:interactions event-interaction-id :callee-voice-channel-id])]
+    ; (println 'event-interaction-id event-interaction-id)
+    ; (println 'map-name map-name)
+    ; (println 'user-id user-id)
+    ; (println 'username username)
+     ; (println 'voice-channel voice-channel)
+    ; (println 'callee-voice-channel-id callee-voice-channel-id)
+
+    (if voice-channel
       (do (if (= callee-voice-channel-id (.-id voice-channel))
-         
-         #_(wrong-vote-reply event callee-voice-channel-id username)))
-      #_(wrong-vote-reply event callee-voice-channel-id username))))
+            (println 'GOOD)
+            (wrong-vote-reply event callee-voice-channel-id username)))
+      (wrong-vote-reply event callee-voice-channel-id username))))
 
 (defn init-interaction [interaction maps]
   (swap! state update :interactions
@@ -125,7 +132,6 @@
                   (format-maps (js->clj (.-rows (<p! (map-server/select-maps server-id option)))))]
               (if (.. interaction -member -voice -channel)
                 (do
-                  (println @state)
                   (init-interaction interaction maps)
                   (<p! (.reply interaction (create-reply :start MAP-QUESTION maps)))
                   (let [users-in-voice (get-users-in-voice interaction)
