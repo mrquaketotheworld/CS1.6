@@ -176,13 +176,6 @@
         voice-channel (.. event -member -voice -channel)
         callee-voice-channel-id (get-in @state
                                     [:interactions event-interaction-id :callee-voice-channel-id])]
-    ; (println 'event-interaction-id event-interaction-id)
-    ; (println 'map-name map-name)
-    ; (println 'user-id user-id)
-    ; (println 'username username)
-     ; (println 'voice-channel voice-channel)
-    ; (println 'callee-voice-channel-id callee-voice-channel-id)
-
     (if voice-channel
       (if (= callee-voice-channel-id (.-id voice-channel))
         (let [user-found (find-user-in-maps event-interaction-id user-id)]
@@ -193,7 +186,11 @@
                                           :ephemeral true}))
                   (do
                     (save-user-in-maps event-interaction-id user-id username map-name)
-                    (<p! (.update event (create-reply event-interaction-id)))))
+                    (<p! (.update event (create-reply event-interaction-id)))
+                    (when (:is-disabled (first (get-maps event-interaction-id)))
+                      (println "RE-REQUEST: update content and buttons")
+                      (<p! (.editReply event (create-reply event-interaction-id))))
+                    ))
                 (catch js/Error e (println e)))))
         (wrong-vote-reply event callee-voice-channel-id username))
       (wrong-vote-reply event callee-voice-channel-id username))))
@@ -228,11 +225,6 @@
         server-name (.. interaction -guild -name)
         interaction-id (.-id interaction)]
     (println "/go INTERACTION" (js/Date.))
-    (js/setTimeout (fn []
-                     (go (try
-                            (disable-buttons interaction-id)
-                            (<p! (.editReply interaction (create-reply interaction-id)))
-                            (catch js/Error e (println e))))) 4000)
     (go (try
           (let [client (<p! (.connect db/pool))
               server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))]
@@ -249,18 +241,22 @@
                   (format-maps (js->clj (.-rows (<p! (map-server/select-maps server-id option)))))]
               (if (.. interaction -member -voice -channel)
                 (do
+                  (js/setTimeout #(go (try
+                                      (disable-buttons interaction-id)
+                                      (<p! (.editReply interaction (create-reply interaction-id)))
+                                      (js/setTimeout
+                                        (fn [] (swap! state update-in [:interactions]
+                                                      (fn [old-state]
+                                                        (dissoc old-state interaction-id)))) 5000)
+                                      (catch js/Error e (println e)))) 3000)
                   (init-interaction interaction maps)
                   (<p! (.reply interaction (create-reply interaction-id)))
                   (let [users-in-voice (get-users-in-voice interaction)
                         channel-id (.. interaction -channel -id)]
-                    #_(<p! (.followUp interaction users-in-voice))
+                    (<p! (.followUp interaction users-in-voice))
                     (init-collector interaction channel-id)))
                   (<p! (.reply
                          interaction #js {:content (str "You're not in the voice channel, "
                                                         (.. interaction -member -user -username))
                                           :ephemeral true})))))
           (catch js/Error e (println e))))))
-
-
-
-(rand-nth (first (partition-by :votes (sort-by :votes > [{:x "b" :votes 117}{:votes 55}{:x "a" :votes 117}{:votes 3}{:votes 1}{:votes 2}{:votes 7}{:x "c" :votes 117}]))))
