@@ -5,7 +5,7 @@
             [db.connection :as db]
             [db.models.server :as server]
             [db.models.map-server :as map-server]))
-; TODO remove ^js/Object
+
 (def builder
   (.. (discord/SlashCommandBuilder.)
       (setName "go")

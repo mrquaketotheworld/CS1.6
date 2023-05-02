@@ -8,13 +8,13 @@
   (.. (discord/SlashCommandBuilder.)
       (setName "quote")
       (setDescription "Show random player's quote!")
-      (addStringOption (fn [^js/Object option]
+      (addStringOption (fn [option]
                          (.. option
                              (setName "word")
                              (setDescription "Search quote or author"))))
       toJSON))
 
-(defn interact! [^js/Object interaction]
+(defn interact! [interaction]
   (let [word (.. interaction -options (getString "word"))]
     (go (try
           (<p! (.reply interaction

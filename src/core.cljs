@@ -10,7 +10,7 @@
                  #js {:intents #js [(.-Guilds discord/GatewayIntentBits)
                                    (.-GuildVoiceStates discord/GatewayIntentBits)]}))
 
-(defn handle-interaction [^js/Object interaction]
+(defn handle-interaction [interaction]
   (when (.isChatInputCommand interaction)
     (case (.-commandName interaction)
       "quote" (quote/interact! interaction)

@@ -16,14 +16,14 @@
       (setDescription "Make random teams from voice channel!")
       toJSON))
 
-(defn interact! [^js/Object interaction]
+(defn interact! [interaction]
   (let [username (.. interaction -member -user -username)
         voice-channel (.. interaction -member -voice -channel)]
     (if voice-channel
       (let [players (.. (.from js/Array (.-members voice-channel))
                         flat
-                        (filter (fn [^js/Object player] (.-user player)))
-                        (map (fn [^js/Object player] (.. player -user -username))))]
+                        (filter (fn [player] (.-user player)))
+                        (map (fn [player] (.. player -user -username))))]
         (if (even? (count players))
           (let [teams (make-teams players)]
             (go (try (<p! (.reply interaction #js {:content
