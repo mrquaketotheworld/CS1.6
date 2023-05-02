@@ -59,6 +59,26 @@
                               callee-voice-channel-id "> voice channel, " username)
                          :ephemeral true}))
 
+(defn find-user-in-maps [maps user-id]
+  (reduce (fn [acc map-item]
+            (let [user-found (->> (:voted-users map-item)
+                                  (filter #(= (:user-id %) user-id))
+                                  (first))]
+              (if user-found
+                (assoc user-found :map-name (:map-name map-item))
+                acc))) nil maps))
+
+(defn save-user-in-maps [interaction-id user-id username map-name]
+  (swap! state update-in [:interactions interaction-id :maps]
+                 #(map (fn [map-item] (if (= (:map-name map-item) map-name)
+                                      (update map-item :voted-users conj {:user-id user-id
+                                                                          :username username
+                                                                          :timestamp (.now js/Date)
+                                                                          }) map-item)) %)))
+(defn get-voted-users [maps]
+  (sort (fn [a b] (- (:timestamp a) (:timestamp b)))
+        (reduce (fn [acc map-item] (concat acc (:voted-users map-item))) [] maps)))
+
 (defmulti create-reply (fn [reply-type content components] reply-type))
 (defmethod create-reply :start [reply-type content maps]
   #js {:content content
@@ -84,21 +104,14 @@
 
     (if voice-channel
       (if (= callee-voice-channel-id (.-id voice-channel))
-        (do
-          (reduce (fn [acc map-item]
-                    (let [user-found (->> (:voted-users map-item)
-                                          (filter #(= (:user-id %) user-id))
-                                          (first))]
-                      (if user-found user-found acc))) nil maps)
-          (swap! state update-in [:interactions event-interaction-id :maps]
-                 #(map (fn [map-item] (if (= (:map-name map-item) map-name)
-                                      (update map-item :voted-users conj {:user-id user-id
-                                                                          :username username
-                                                                          :timestamp (.now js/Date)
-                                                                          }) map-item)) %))
-
-            ; (println (get-in @state [:interactions event-interaction-id :maps]))
-          )
+        (let [user-found (find-user-in-maps maps user-id)]
+          (if user-found
+            (.reply event #js {:content (str "You have already voted for "
+                                        (:map-name user-found) ", " username)
+                               :ephemeral true})
+            (do
+              
+              (save-user-in-maps event-interaction-id user-id username map-name))))
         (wrong-vote-reply event callee-voice-channel-id username))
       (wrong-vote-reply event callee-voice-channel-id username))))
 
@@ -158,3 +171,7 @@
                                                         (.. interaction -member -user -username))
                                           :ephemeral true})))))
           (catch js/Error e (println e))))))
+
+
+
+(sort (fn [a b] (- (:t a) (:t b))) [{:t 3}{:t 7}{:t 4}{:t 1} {:t 2}{:t 2}]) ; Thanks! :)
