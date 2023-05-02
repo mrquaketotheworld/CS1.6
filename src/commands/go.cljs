@@ -58,15 +58,18 @@
 (defn create-row [components]
   (.addComponents (discord/ActionRowBuilder.) (clj->js components)))
 
-(defn create-button [map-name label is-disabled]
+(defn create-button [map-name label is-disabled winner-map]
   (.. (discord/ButtonBuilder.)
       (setCustomId map-name)
       (setLabel label)
-      (setStyle (.-Primary discord/ButtonStyle))
+      (setStyle (if (= map-name winner-map)
+                       (.-Danger discord/ButtonStyle)
+                       (.-Primary discord/ButtonStyle)))
       (setDisabled is-disabled)))
 
 (defn create-buttons [interaction-id]
-  (clj->js (reduce (fn [acc map-group]
+  (let [winner-map (get-in @state [:interactions interaction-id :winner-map])]
+   (clj->js (reduce (fn [acc map-group]
              (conj acc (create-row (into [] (map (fn [map-item]
                                                    (let [map-name (:map-name map-item)
                                                          is-disabled (:is-disabled map-item)
@@ -78,8 +81,9 @@
                                                      (create-button
                                                        map-name
                                                        map-label
-                                                       is-disabled))) map-group)))))
-           [] (partition-all 4 (get-maps interaction-id)))))
+                                                       is-disabled
+                                                       winner-map))) map-group)))))
+           [] (partition-all 4 (get-maps interaction-id))))))
 
 (defn disable-buttons [interaction-id]
   (swap! state update-in [:interactions interaction-id :maps]
@@ -92,7 +96,6 @@
 (defn calculate-winner-map [interaction-id]
   (let [winner-candidates (->> (get-maps interaction-id)
         (map (fn [map-item]
-               (println map-item)
                {:map-name (:map-name map-item)
                 :votes (->> map-item
                             :voted-users
@@ -102,6 +105,7 @@
         (partition-by :votes)
         first)
         winner-map (->> winner-candidates rand-nth :map-name)]
+    (swap! state assoc-in [:interactions interaction-id :winner-map] winner-map)
     (if (> (count winner-candidates) 1)
       (let [candidates-string (reduce (fn [acc candidate]
                 (str acc (discord/bold (:map-name candidate)) "? ")) "" winner-candidates)]
@@ -113,7 +117,7 @@
 (defn create-users-list [maps]
   (let [users-list-string
         (reduce (fn [acc voted-user]
-                  (str acc ":jigsaw: " (discord/bold (:username voted-user)) ; TODO add bold to other places
+                  (str acc ":jigsaw: " (:username voted-user) ; TODO add bold to other places
                        (when (:is-disabled (first maps)) (str ": " (:map-name voted-user))) "\n"))
                 "" (get-voted-users maps))]
     (if (empty? users-list-string) "" users-list-string)))
