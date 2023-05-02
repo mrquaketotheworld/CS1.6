@@ -68,13 +68,17 @@
 (defn create-buttons [interaction-id]
   (clj->js (reduce (fn [acc map-group]
              (conj acc (create-row (into [] (map (fn [map-item]
-                                                   (create-button
-                                                     (:map-name map-item)
-                                       (if (:is-disabled map-item)
-                                         (str (:map-name map-item) " "
-                                              (count (:voted-users map-item)))
-                                         (:map-name map-item)) ; TODO
-                                                     (:is-disabled map-item))) map-group)))))
+                                                   (let [map-name (:map-name map-item)
+                                                         is-disabled (:is-disabled map-item)
+                                                         map-label
+                                                           (if is-disabled
+                                                                 (str map-name " "
+                                                                   (count (:voted-users map-item)))
+                                                                  map-name)]
+                                                     (create-button
+                                                       map-name
+                                                       map-label
+                                                       is-disabled))) map-group)))))
            [] (partition-all 4 (get-maps interaction-id)))))
 
 (defn disable-buttons [interaction-id]
