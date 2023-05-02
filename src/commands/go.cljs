@@ -24,6 +24,9 @@
 
 (def MAP-QUESTION ":triangular_flag_on_post: **VOTE FOR THE MAP PLEASE**, **1 MINUTE TO VOTE**")
 
+(defn get-maps [interaction-id]
+  (get-in @state [:interactions interaction-id :maps]))
+
 (defn create-row [components]
   (.addComponents (discord/ActionRowBuilder.) (clj->js components)))
 
@@ -34,14 +37,35 @@
       (setStyle (.-Primary discord/ButtonStyle))
       (setDisabled is-disabled)))
 
-(defn create-buttons [maps]
+(defn create-buttons [interaction-id]
   (clj->js (reduce (fn [acc map-group]
              (conj acc (create-row (into [] (map (fn [map-item]
                                                    (create-button
                                                      (:map-name map-item)
                                                      (:map-name map-item) ; TODO
                                                      (:is-disabled map-item))) map-group)))))
-           [] (partition-all 4 maps))))
+           [] (partition-all 4 (get-maps interaction-id)))))
+
+(defn get-voted-users [maps]
+  (sort (fn [a b] (- (:timestamp a) (:timestamp b)))
+        (reduce (fn [acc map-item] (concat acc (:voted-users map-item))) [] maps)))
+
+(defn calculate-votes []
+  "FINISH")
+
+(defn create-users-list [maps]
+  (let [users-list-string
+        (reduce (fn [acc voted-user]
+                  (str acc ":jigsaw: " (discord/bold (:username voted-user))": "
+                       (:map-name voted-user) "\n"))
+                "" (get-voted-users maps))]
+    (if (empty? users-list-string) "" users-list-string)))
+
+(defn create-content [interaction-id]
+  (let [maps (get-maps interaction-id)
+        title (if (:is-disabled (first maps)) (calculate-votes) MAP-QUESTION)
+        users-list (create-users-list maps)]
+    (str title "\n" users-list)))
 
 (defn format-maps [maps]
   (map (fn [map-item]
@@ -59,32 +83,27 @@
                               callee-voice-channel-id "> voice channel, " username)
                          :ephemeral true}))
 
-(defn find-user-in-maps [maps user-id]
+(defn find-user-in-maps [interaction-id user-id]
   (reduce (fn [acc map-item]
             (let [user-found (->> (:voted-users map-item)
                                   (filter #(= (:user-id %) user-id))
                                   (first))]
               (if user-found
-                (assoc user-found :map-name (:map-name map-item))
-                acc))) nil maps))
+                user-found
+                acc))) nil (get-maps interaction-id)))
 
 (defn save-user-in-maps [interaction-id user-id username map-name]
   (swap! state update-in [:interactions interaction-id :maps]
                  #(map (fn [map-item] (if (= (:map-name map-item) map-name)
                                       (update map-item :voted-users conj {:user-id user-id
                                                                           :username username
+                                                                          :map-name map-name
                                                                           :timestamp (.now js/Date)
                                                                           }) map-item)) %)))
-(defn get-voted-users [maps]
-  (sort (fn [a b] (- (:timestamp a) (:timestamp b)))
-        (reduce (fn [acc map-item] (concat acc (:voted-users map-item))) [] maps)))
 
-(defmulti create-reply (fn [reply-type content components] reply-type))
-(defmethod create-reply :start [reply-type content maps]
-  #js {:content content
-       :components (create-buttons maps)})
-(defmethod create-reply :vote [reply-type content maps])
-(defmethod create-reply :finish [reply-type content components] {:x "test"})
+(defn create-reply [interaction-id]
+  #js {:content (create-content interaction-id)
+       :components (create-buttons interaction-id)})
 
 (defn handle-collector-event! [event]
   (let [event-interaction-id (.. event -message -interaction -id)
@@ -93,8 +112,7 @@
         username (.. event -user -username)
         voice-channel (.. event -member -voice -channel)
         callee-voice-channel-id (get-in @state
-                                    [:interactions event-interaction-id :callee-voice-channel-id])
-        maps (get-in @state [:interactions event-interaction-id :maps])]
+                                    [:interactions event-interaction-id :callee-voice-channel-id])]
     ; (println 'event-interaction-id event-interaction-id)
     ; (println 'map-name map-name)
     ; (println 'user-id user-id)
@@ -104,14 +122,16 @@
 
     (if voice-channel
       (if (= callee-voice-channel-id (.-id voice-channel))
-        (let [user-found (find-user-in-maps maps user-id)]
-          (if user-found
-            (.reply event #js {:content (str "You have already voted for "
-                                        (:map-name user-found) ", " username)
-                               :ephemeral true})
-            (do
-              
-              (save-user-in-maps event-interaction-id user-id username map-name))))
+        (let [user-found (find-user-in-maps event-interaction-id user-id)]
+          (go (try
+                (if user-found
+                  (<p! (.reply event #js {:content (str "You have already voted for "
+                                                        (:map-name user-found) ", " username)
+                                          :ephemeral true}))
+                  (do
+                    (save-user-in-maps event-interaction-id user-id username map-name)
+                    (<p! (.update event (create-reply event-interaction-id)))))
+                (catch js/Error e (println e)))))
         (wrong-vote-reply event callee-voice-channel-id username))
       (wrong-vote-reply event callee-voice-channel-id username))))
 
@@ -161,7 +181,7 @@
               (if (.. interaction -member -voice -channel)
                 (do
                   (init-interaction interaction maps)
-                  (<p! (.reply interaction (create-reply :start MAP-QUESTION maps)))
+                  (<p! (.reply interaction (create-reply (.-id interaction))))
                   (let [users-in-voice (get-users-in-voice interaction)
                         channel-id (.. interaction -channel -id)]
                     #_(<p! (.followUp interaction users-in-voice))
