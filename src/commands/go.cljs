@@ -100,19 +100,15 @@
                             )}))
         (sort-by :votes >)
         (partition-by :votes)
-        first)]
+        first)
+        winner-map (->> winner-candidates rand-nth :map-name)]
     (if (> (count winner-candidates) 1)
       (let [candidates-string (reduce (fn [acc candidate]
                 (str acc (discord/bold (:map-name candidate)) "? ")) "" winner-candidates)]
-        (->> winner-candidates
-             rand-nth
-             :map-name
+        (->> winner-map
              format-map-name
              (str candidates-string "Random: ")))
-      (->> winner-candidates
-           first
-           :map-name
-           format-map-name))))
+      (format-map-name winner-map))))
 
 (defn create-users-list [maps]
   (let [users-list-string
