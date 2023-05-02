@@ -19,8 +19,7 @@
       toJSON))
 
 (def state (atom {:collectors {}
-                  :interactions {}
-                  }))
+                  :interactions {}}))
 
 (def emoji-maps {
   "Inferno:" ":fire:"
@@ -141,10 +140,11 @@
             (str acc "<@" (.. user -user -id) ">")) "" users))
 
 (defn wrong-vote-reply [interaction callee-voice-channel-id username]
-  (.reply interaction #js {:content
-                         (str "This is the voting of <#"
-                              callee-voice-channel-id "> voice channel, " username)
-                         :ephemeral true}))
+  (go (try (<p! (.reply interaction #js {:content
+                                     (str "This is the voting of <#"
+                                          callee-voice-channel-id "> voice channel, " username)
+                                     :ephemeral true}))
+           (catch js/Error e (println "ERROR 148 go" e)))))
 
 (defn find-user-in-maps [interaction-id user-id]
   (reduce (fn [acc map-item]
@@ -255,7 +255,7 @@
                                         (fn [] (swap! state update-in [:interactions]
                                                       (fn [old-state]
                                                         (dissoc old-state interaction-id)))) 5000)
-                                      (catch js/Error e (println "ERROR 258 go" e)))) 10000)
+                                      (catch js/Error e (println "ERROR 258 go" e)))) 60000)
                   (init-interaction interaction maps)
                   (<p! (.reply interaction (create-reply interaction-id)))
                   (let [users-in-voice (get-users-in-voice interaction)
@@ -263,7 +263,8 @@
                     (<p! (.followUp interaction users-in-voice))
                     (init-collector interaction channel-id)))
                   (<p! (.reply
-                         interaction #js {:content (str "You're not in the voice channel, "
+                         interaction #js {:content (str "You need to be in a voice "
+                                                        "channel to run map poll, "
                                                         (.. interaction -member -user -username))
                                           :ephemeral true})))))
           (catch js/Error e (println "ERROR 269 go" e))))))
