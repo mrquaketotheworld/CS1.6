@@ -82,9 +82,18 @@
     ; (println 'callee-voice-channel-id callee-voice-channel-id)
 
     (if voice-channel
-      (do (if (= callee-voice-channel-id (.-id voice-channel))
-            (println 'GOOD)
-            (wrong-vote-reply event callee-voice-channel-id username)))
+      (if (= callee-voice-channel-id (.-id voice-channel))
+        (do
+          (swap! state update-in [:interactions event-interaction-id :maps]
+                 #(map (fn [map-item] (if (= (:map-name map-item) map-name)
+                                      (update map-item :voted-users conj {:user-id user-id
+                                                                          :username username
+                                                                          :timestamp (.now js/Date)
+                                                                          }) map-item)) %))
+
+            ; (println (get-in @state [:interactions event-interaction-id :maps]))
+          )
+        (wrong-vote-reply event callee-voice-channel-id username))
       (wrong-vote-reply event callee-voice-channel-id username))))
 
 (defn init-interaction [interaction maps]
