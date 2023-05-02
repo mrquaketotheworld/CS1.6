@@ -22,9 +22,34 @@
                   :interactions {}
                   }))
 
-(def MAP-QUESTION ":triangular_flag_on_post: **VOTE FOR THE MAP PLEASE**, **1 MINUTE TO VOTE**")
-(def VOTE_END ":checkered_flag: **WINNER:**")
+(def emoji-maps {
+  "Inferno:" ":fire:"
+  "Nuke" ":radioactive:"
+  "Train" ":station:"
+  "Cache" ":dollar:"
+  "Tuscan" ":palm_tree:"
+  "Dust2" ":duck:"
+  "Mirage" ":firecracker:"
+})
 
+(def emoji-numbers {
+  "1" ":one:"
+  "2" ":two:"
+  "3" ":three:"
+  "4" ":four:"
+  "5" ":five:"
+  "6" ":six:"
+  "7" ":seven:"
+  "8" ":eight:"
+  "9" ":nine:"
+})
+
+(defn format-map-name [map-name]
+  (let [emoji-start-end (emoji-maps map-name)]
+    (str (reduce (fn [acc char]
+               (str acc (if (js/isNaN char)
+                          (str ":regional_indicator_" (clojure.string/lower-case char) ":")
+                          (emoji-numbers char)))) emoji-start-end map-name) emoji-start-end)))
 
 (defn get-maps [interaction-id]
   (get-in @state [:interactions interaction-id :maps]))
@@ -56,7 +81,7 @@
   (sort (fn [a b] (- (:timestamp a) (:timestamp b)))
         (reduce (fn [acc map-item] (concat acc (:voted-users map-item))) [] maps)))
 
-(defn calculate-votes [interaction-id]
+(defn calculate-winner-map [interaction-id]
   (let [winner-candidates (->> (get-maps interaction-id)
         (map (fn [map-item]
                (println map-item)
@@ -74,9 +99,12 @@
         (->> winner-candidates
              rand-nth
              :map-name
+             format-map-name
              (str candidates-string "Random: ")))
-      (:map-name (first winner-candidates)))
-    ))
+      (->> winner-candidates
+           first
+           :map-name
+           format-map-name))))
 
 (defn create-users-list [maps]
   (let [users-list-string
@@ -89,7 +117,8 @@
 (defn create-content [interaction-id]
   (let [maps (get-maps interaction-id)
         title (if (:is-disabled (first maps))
-                (str ":checkered_flag: **WINNER:** " (calculate-votes interaction-id)) MAP-QUESTION)
+                (str ":checkered_flag: **WINNER:** " (calculate-winner-map interaction-id))
+                ":triangular_flag_on_post: **VOTE FOR THE MAP PLEASE**, **1 MINUTE TO VOTE**")
         users-list (create-users-list maps)]
     (str title "\n" users-list)))
 
