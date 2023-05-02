@@ -73,7 +73,8 @@
         username (.. event -user -username)
         voice-channel (.. event -member -voice -channel)
         callee-voice-channel-id (get-in @state
-                                    [:interactions event-interaction-id :callee-voice-channel-id])]
+                                    [:interactions event-interaction-id :callee-voice-channel-id])
+        maps (get-in @state [:interactions event-interaction-id :maps])]
     ; (println 'event-interaction-id event-interaction-id)
     ; (println 'map-name map-name)
     ; (println 'user-id user-id)
@@ -84,6 +85,11 @@
     (if voice-channel
       (if (= callee-voice-channel-id (.-id voice-channel))
         (do
+          (reduce (fn [acc map-item]
+                    (let [user-found (->> (:voted-users map-item)
+                                          (filter #(= (:user-id %) user-id))
+                                          (first))]
+                      (if user-found user-found acc))) nil maps)
           (swap! state update-in [:interactions event-interaction-id :maps]
                  #(map (fn [map-item] (if (= (:map-name map-item) map-name)
                                       (update map-item :voted-users conj {:user-id user-id
