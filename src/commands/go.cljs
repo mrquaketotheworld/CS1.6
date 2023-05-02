@@ -191,7 +191,7 @@
                       (println "RE-REQUEST: update content and buttons")
                       (<p! (.editReply event (create-reply event-interaction-id))))
                     ))
-                (catch js/Error e (println e)))))
+                (catch js/Error e (println "ERROR 194 go" e)))))
         (wrong-vote-reply event callee-voice-channel-id username))
       (wrong-vote-reply event callee-voice-channel-id username))))
 
@@ -241,7 +241,7 @@
               (when (empty? server-with-maps)
                 (<p! (map-server/insert-default-maps client server-id)))
               (<p! (db/commit-transaction client))
-              (catch js/Error e (do (println e)
+              (catch js/Error e (do (println "ERROR 244 go" e)
                                     (<p! (db/rollback-transaction client))))
               (finally (do (.release client))))
             (let [maps
@@ -255,7 +255,7 @@
                                         (fn [] (swap! state update-in [:interactions]
                                                       (fn [old-state]
                                                         (dissoc old-state interaction-id)))) 5000)
-                                      (catch js/Error e (println e)))) 10000)
+                                      (catch js/Error e (println "ERROR 258 go" e)))) 10000)
                   (init-interaction interaction maps)
                   (<p! (.reply interaction (create-reply interaction-id)))
                   (let [users-in-voice (get-users-in-voice interaction)
@@ -266,4 +266,4 @@
                          interaction #js {:content (str "You're not in the voice channel, "
                                                         (.. interaction -member -user -username))
                                           :ephemeral true})))))
-          (catch js/Error e (println e))))))
+          (catch js/Error e (println "ERROR 269 go" e))))))

@@ -39,5 +39,5 @@
                                                 (quote-item "author"))}
                            ))))
 
-          (catch js/Error e (println e))))))
+          (catch js/Error e (println "ERROR 42 quote" e))))))
 

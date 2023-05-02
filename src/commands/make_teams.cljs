@@ -4,8 +4,6 @@
             ["discord.js" :as discord]
             [clojure.string :as string]))
 
-(def error-message "ERROR /make-teams")
-
 (defn make-teams [players]
   (let [shuffled-players (shuffle players)
         count-half (/ (count shuffled-players) 2)]
@@ -33,14 +31,14 @@
                                                    (string/join ", " (:team-1 teams))
                                                    "\n" "**Team 2:** " (string/join ", "
                                                     (:team-2 teams)))}))
-                     (catch js/Error e (println error-message e)))))
+                     (catch js/Error e (println "ERROR 34 make_teams" e)))))
           (go (try (<p! (.reply interaction #js {:content
                                                  (str "The number of players in "
                                                       "the voice channel must be even, " username)
                                                  :ephemeral true}))
-                   (catch js/Error e (println error-message e))))))
+                   (catch js/Error e (println "ERROR 39 make_teams" e))))))
       (go (try (<p! (.reply interaction #js {:content (str "You need to be in a voice "
                                                            "channel to make teams, " username)
                                              :ephemeral true}))
-                 (catch js/Error e (println error-message e)))))))
+                 (catch js/Error e (println "ERROR 43 make_teams" e)))))))
 
