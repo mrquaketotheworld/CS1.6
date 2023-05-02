@@ -1,4 +1,4 @@
-(ns commands.go ; TODO fix errors text
+(ns commands.go
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
@@ -117,7 +117,7 @@
 (defn create-users-list [maps]
   (let [users-list-string
         (reduce (fn [acc voted-user]
-                  (str acc ":jigsaw: " (:username voted-user) ; TODO add bold to other places
+                  (str acc ":jigsaw: " (:username voted-user)
                        (when (:is-disabled (first maps)) (str ": " (:map-name voted-user))) "\n"))
                 "" (get-voted-users maps))]
     (if (empty? users-list-string) "" users-list-string)))
@@ -243,7 +243,7 @@
               (<p! (db/commit-transaction client))
               (catch js/Error e (do (println "ERROR 244 go" e)
                                     (<p! (db/rollback-transaction client))))
-              (finally (do (.release client))))
+              (finally (.release client)))
             (let [maps
                   (format-maps (js->clj (.-rows (<p! (map-server/select-maps server-id option)))))]
               (if (.. interaction -member -voice -channel)
