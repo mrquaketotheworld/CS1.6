@@ -215,6 +215,13 @@
     (let [collector (get-in @state [:collectors channel-id])]
                           (.on collector "collect" handle-collector-event!))))
 
+(defn on-channel-delete [channel]
+  (swap! state update-in [:collectors]
+         (fn [old-collectors]
+           (let [channel-id (.-id channel)]
+           (.stop (old-collectors channel-id))
+           (dissoc old-collectors channel-id)))))
+
 (defn get-users-in-voice [interaction]
   (convert-users-to-string (.from js/Array
                                   (.. interaction -member -voice -channel -members values))))
@@ -248,7 +255,7 @@
                                         (fn [] (swap! state update-in [:interactions]
                                                       (fn [old-state]
                                                         (dissoc old-state interaction-id)))) 5000)
-                                      (catch js/Error e (println e)))) 3000)
+                                      (catch js/Error e (println e)))) 10000)
                   (init-interaction interaction maps)
                   (<p! (.reply interaction (create-reply interaction-id)))
                   (let [users-in-voice (get-users-in-voice interaction)

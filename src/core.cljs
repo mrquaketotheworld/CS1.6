@@ -20,9 +20,13 @@
 
 (.on client "ready" #(println "Ready!" (js/Date.)))
 (.on client "interactionCreate" handle-interaction)
+(.on client "channelDelete" go-command/on-channel-delete)
 (.login client TOKEN)
 
 (defn main [& args]
   (when (= (nth args 0) "register")
     (println "Register commands")
     (deploy/register-commands)))
+
+ (.on js/process "unhandledRejection"
+      (fn [e] (println (js/Date.) "unhandledRejection" e)))
