@@ -47,9 +47,10 @@
 (defn format-map-name [map-name]
   (let [emoji-start-end (emoji-maps map-name)]
     (str (reduce (fn [acc char]
-               (str acc (if (js/isNaN char)
-                          (str ":regional_indicator_" (clojure.string/lower-case char) ":")
-                          (emoji-numbers char)))) emoji-start-end map-name) emoji-start-end)))
+                   (str acc (if (js/isNaN char)
+                              (str ":regional_indicator_" (clojure.string/lower-case char) ":")
+                              (emoji-numbers char))))
+                               (str emoji-start-end " ") map-name) " " emoji-start-end)))
 
 (defn get-maps [interaction-id]
   (get-in @state [:interactions interaction-id :maps]))
@@ -109,8 +110,8 @@
 (defn create-users-list [maps]
   (let [users-list-string
         (reduce (fn [acc voted-user]
-                  (str acc ":jigsaw: " (discord/bold (:username voted-user))": "
-                       (:map-name voted-user) "\n"))
+                  (str acc ":jigsaw: " (discord/bold (:username voted-user)) ; TODO add bold to other places
+                       (when (:is-disabled (first maps)) (str ": " (:map-name voted-user))) "\n"))
                 "" (get-voted-users maps))]
     (if (empty? users-list-string) "" users-list-string)))
 
