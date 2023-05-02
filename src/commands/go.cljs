@@ -1,4 +1,4 @@
-(ns commands.go
+(ns commands.go ; TODO fix errors text
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
@@ -23,6 +23,8 @@
                   }))
 
 (def MAP-QUESTION ":triangular_flag_on_post: **VOTE FOR THE MAP PLEASE**, **1 MINUTE TO VOTE**")
+(def VOTE_END ":checkered_flag: **WINNER:**")
+
 
 (defn get-maps [interaction-id]
   (get-in @state [:interactions interaction-id :maps]))
@@ -46,12 +48,35 @@
                                                      (:is-disabled map-item))) map-group)))))
            [] (partition-all 4 (get-maps interaction-id)))))
 
+(defn disable-buttons [interaction-id]
+  (swap! state update-in [:interactions interaction-id :maps]
+         #(map (fn [map-item] (assoc map-item :is-disabled true)) %)))
+
 (defn get-voted-users [maps]
   (sort (fn [a b] (- (:timestamp a) (:timestamp b)))
         (reduce (fn [acc map-item] (concat acc (:voted-users map-item))) [] maps)))
 
-(defn calculate-votes []
-  "FINISH")
+(defn calculate-votes [interaction-id]
+  (let [winner-candidates (->> (get-maps interaction-id)
+        (map (fn [map-item]
+               (println map-item)
+               {:map-name (:map-name map-item)
+                :votes (->> map-item
+                            :voted-users
+                            count
+                            )}))
+        (sort-by :votes >)
+        (partition-by :votes)
+        first)]
+    (if (> (count winner-candidates) 1)
+      (let [candidates-string (reduce (fn [acc candidate]
+                (str acc (discord/bold (:map-name candidate)) "? ")) "" winner-candidates)]
+        (->> winner-candidates
+             rand-nth
+             :map-name
+             (str candidates-string "Random: ")))
+      (:map-name (first winner-candidates)))
+    ))
 
 (defn create-users-list [maps]
   (let [users-list-string
@@ -63,7 +88,8 @@
 
 (defn create-content [interaction-id]
   (let [maps (get-maps interaction-id)
-        title (if (:is-disabled (first maps)) (calculate-votes) MAP-QUESTION)
+        title (if (:is-disabled (first maps))
+                (str ":checkered_flag: **WINNER:** " (calculate-votes interaction-id)) MAP-QUESTION)
         users-list (create-users-list maps)]
     (str title "\n" users-list)))
 
@@ -162,8 +188,14 @@
 (defn interact! [interaction]
   (let [option (or (.. interaction -options (getString "mapmode")) "main")
         server-id (.. interaction -guild -id)
-        server-name (.. interaction -guild -name)]
+        server-name (.. interaction -guild -name)
+        interaction-id (.-id interaction)]
     (println "/go INTERACTION" (js/Date.))
+    (js/setTimeout (fn []
+                     (go (try
+                            (disable-buttons interaction-id)
+                            (<p! (.editReply interaction (create-reply interaction-id)))
+                            (catch js/Error e (println e))))) 4000)
     (go (try
           (let [client (<p! (.connect db/pool))
               server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))]
@@ -181,7 +213,7 @@
               (if (.. interaction -member -voice -channel)
                 (do
                   (init-interaction interaction maps)
-                  (<p! (.reply interaction (create-reply (.-id interaction))))
+                  (<p! (.reply interaction (create-reply interaction-id)))
                   (let [users-in-voice (get-users-in-voice interaction)
                         channel-id (.. interaction -channel -id)]
                     #_(<p! (.followUp interaction users-in-voice))
@@ -194,4 +226,4 @@
 
 
 
-(sort (fn [a b] (- (:t a) (:t b))) [{:t 3}{:t 7}{:t 4}{:t 1} {:t 2}{:t 2}]) ; Thanks! :)
+(rand-nth (first (partition-by :votes (sort-by :votes > [{:x "b" :votes 117}{:votes 55}{:x "a" :votes 117}{:votes 3}{:votes 1}{:votes 2}{:votes 7}{:x "c" :votes 117}]))))
