@@ -70,7 +70,10 @@
              (conj acc (create-row (into [] (map (fn [map-item]
                                                    (create-button
                                                      (:map-name map-item)
-                                                     (:map-name map-item) ; TODO
+                                       (if (:is-disabled map-item)
+                                         (str (:map-name map-item) " "
+                                              (count (:voted-users map-item)))
+                                         (:map-name map-item)) ; TODO
                                                      (:is-disabled map-item))) map-group)))))
            [] (partition-all 4 (get-maps interaction-id)))))
 
