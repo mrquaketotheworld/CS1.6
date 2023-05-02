@@ -10,13 +10,10 @@
                    }))
 
 (defn begin-transaction [client]
-  (println "BEGIN")
   (.query client "BEGIN"))
 
 (defn rollback-transaction [client]
-  (println "ROLLBACK")
   (.query client "ROLLBACK"))
 
 (defn commit-transaction [client]
-  (println "COMMIT")
   (.query client "COMMIT"))

@@ -18,6 +18,12 @@
                                          #js {:name "fun" :value "fun"}))))
       toJSON))
 
+(def state (atom {:collectors {}
+                  :interactions {}
+                  }))
+
+(def MAP-QUESTION ":triangular_flag_on_post: **VOTE FOR THE MAP PLEASE**, **1 MINUTE TO VOTE**")
+
 (defn create-row [components]
   (.addComponents (discord/ActionRowBuilder.) (clj->js components)))
 
@@ -33,7 +39,7 @@
              (conj acc (create-row (into [] (map (fn [map-item]
                                                    (create-button
                                                      (:map-name map-item)
-                                                     (:map-name map-item)
+                                                     (:map-name map-item) ; TODO
                                                      (:is-disabled map-item))) map-group)))))
            [] (partition-all 4 maps))))
 
@@ -43,20 +49,60 @@
           :voted-users []
           :is-disabled false}) maps))
 
-(defn create-reply [title maps]
-  #js {:content title
-       :components (create-buttons maps)})
-
 (defn convert-users-to-string [users]
   (reduce (fn [acc user]
             (str acc "<@" (.. user -user -id) ">")) "" users))
 
-(defn handle-collector-event [event]
-  (println event))
+(defn wrong-vote-reply [interaction callee-voice-channel-id username]
+  (.reply interaction #js {:content
+                         (str "This is the voting of <#"
+                              callee-voice-channel-id "> voice channel, " username)
+                         :ephemeral true}))
 
-(def MAP-QUESTION ":triangular_flag_on_post: **VOTE FOR THE MAP PLEASE**, **1 MINUTE TO VOTE**")
+(defmulti create-reply (fn [reply-type content components] reply-type))
+(defmethod create-reply :start [reply-type content maps]
+  #js {:content content
+       :components (create-buttons maps)})
+(defmethod create-reply :vote [reply-type content maps])
+(defmethod create-reply :finish [reply-type content components] {:x "test"})
 
-(def state (atom {}))
+(defn handle-collector-event! [event]
+  (println "handle event!")
+  (let [event-interaction-id (.. event -message -interaction -id)
+        event-guild-id (.-guildId event)
+        map-name (.-customId event)
+        user-id (.. event -user -id)
+        username (.. event -user -username)
+        voice-channel (.. event -member -voice -channel) ]
+    #_(if voice-channel
+      (do (if (= callee-voice-channel-id (.-id voice-channel))
+         
+         #_(wrong-vote-reply event callee-voice-channel-id username)))
+      #_(wrong-vote-reply event callee-voice-channel-id username))))
+
+(defn init-interaction [interaction maps]
+  (swap! state update :interactions
+         #(assoc % (.-id interaction) { :maps maps
+                                   :callee-voice-channel-id (.. interaction
+                                                                -member
+                                                                -voice
+                                                                -channel
+                                                                -id)})))
+
+(defn init-collector [interaction channel-id]
+  (when-not (get-in @state [:collectors channel-id])
+    (swap! state assoc-in [:collectors channel-id]
+           (.. interaction
+               -channel
+               (createMessageComponentCollector #js
+                                                {:componentType
+                                                 (.-Button discord/ComponentType)})))
+    (let [collector (get-in @state [:collectors channel-id])]
+                          (.on collector "collect" handle-collector-event!))))
+
+(defn get-users-in-voice [interaction]
+  (convert-users-to-string (.from js/Array
+                                  (.. interaction -member -voice -channel -members values))))
 
 (defn interact! [interaction]
   (let [option (or (.. interaction -options (getString "mapmode")) "main")
@@ -74,53 +120,20 @@
               (<p! (db/commit-transaction client))
               (catch js/Error e (do (println e)
                                     (<p! (db/rollback-transaction client))))
-              (finally (do (.release client)
-                           (println "RELEASE CLIENT")))) ; remove TESTING stuff
-
+              (finally (do (.release client))))
             (let [maps
-                  (format-maps (js->clj (.-rows (<p! (map-server/select-maps server-id option)))))
-                  guild-id (.. interaction -guild -id)
-                  interaction-id (.-id interaction)]
+                  (format-maps (js->clj (.-rows (<p! (map-server/select-maps server-id option)))))]
               (if (.. interaction -member -voice -channel)
                 (do
-                  (when-not (contains? @state guild-id)
-                    (swap! state
-                           (fn [old-state]
-                                 (assoc old-state
-                                        guild-id
-                                        {:collectors {}
-                                         :interactions {
-                                                interaction-id {
-                                                :maps maps
-                                                :callee-voice-channel-id (.. interaction
-                                                                             -member
-                                                                             -voice
-                                                                             -channel
-                                                                             -id)}}}))))
-                  (<p! (.reply interaction (create-reply MAP-QUESTION maps)))
-                  (let [users-in-voice
-                        (convert-users-to-string (.from js/Array
-                                (.. interaction -member -voice -channel -members values)))
+                  (println @state)
+                  (init-interaction interaction maps)
+                  (<p! (.reply interaction (create-reply :start MAP-QUESTION maps)))
+                  (let [users-in-voice (get-users-in-voice interaction)
                         channel-id (.. interaction -channel -id)]
-                    (<p! (.followUp interaction users-in-voice))
-                    (when-not (get-in @state [guild-id :collectors channel-id])
-                      (swap! state assoc-in [guild-id :collectors channel-id]
-                             (.. interaction
-                                 -channel
-                                 (createMessageComponentCollector #js
-                                                              {:componentType
-                                                             (.-Button discord/ComponentType)}))))
-                    (let [collector (get-in @state [guild-id :collectors channel-id])]
-                      (.on collector "collect" handle-collector-event)))) ; if user in voice, do
+                    #_(<p! (.followUp interaction users-in-voice))
+                    (init-collector interaction channel-id)))
                   (<p! (.reply
                          interaction #js {:content (str "You're not in the voice channel, "
                                                         (.. interaction -member -user -username))
                                           :ephemeral true})))))
           (catch js/Error e (println e))))))
-
-
-
-
-(def x (atom {:cars {:a "Toyota" :b "BMW"}}))
-
-(swap! x assoc-in [:cars :a] "Suzuki")
