@@ -11,9 +11,10 @@
                  #js {:intents #js [(.-Guilds discord/GatewayIntentBits)
                                    (.-GuildVoiceStates discord/GatewayIntentBits)]}))
 
-(def state (atom {:collectors {} }))
+(def state (atom {:button-collectors {} :select-menu-collectors {} }))
 
 (defn handle-collector-event-type-button! [interaction]
+  (println 'BUTTON-COLLECTOR)
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
       "go"(go-command/handle-collector-event-type-button! interaction)
@@ -23,19 +24,40 @@
 
 (defn init-collector-type-button [interaction]
   (let [channel-id (.. interaction -channel -id)]
-    (when-not (get-in @state [:collectors channel-id])
-        (swap! state assoc-in [:collectors channel-id]
+    (when-not (get-in @state [:button-collectors channel-id])
+        (swap! state assoc-in [:button-collectors channel-id]
                (.. interaction
                    -channel
                    (createMessageComponentCollector #js
                                                     {:componentType
                                                      (.-Button discord/ComponentType)})))
-        (let [collector (get-in @state [:collectors channel-id])]
+        (let [collector (get-in @state [:button-collectors channel-id])]
                               (.on collector "collect" handle-collector-event-type-button!)))))
+
+(defn handle-collector-event-select-menu! [interaction]
+  (println 'SELECT-MENU-COLLECTOR)
+  (let [command-name (.. interaction -message -interaction -commandName)]
+    (case command-name
+      "go"(go-command/handle-collector-event-type-button! interaction)
+      "gg"(gg/interact! interaction)
+      (println "OTHER"))
+    ))
+
+(defn init-collector-type-select-menu [interaction]
+  (let [channel-id (.. interaction -channel -id)]
+    (when-not (get-in @state [:select-menu-collectors channel-id])
+        (swap! state assoc-in [:select-menu-collectors channel-id]
+               (.. interaction
+                   -channel
+                   (createMessageComponentCollector #js
+                                                    {:componentType
+                                                     (.-SelectMenu discord/ComponentType)})))
+        (let [collector (get-in @state [:select-menu-collectors channel-id])]
+                              (.on collector "collect" handle-collector-event-select-menu!)))))
 
 (defn handle-interaction [interaction]
   (init-collector-type-button interaction)
-  (println @state)
+  (init-collector-type-select-menu interaction)
   ; (.log js/console (.. interaction -message))
   (when (.isChatInputCommand interaction)
     (case (.-commandName interaction)
@@ -46,7 +68,7 @@
       (println "OTHER"))))
 
 (defn on-channel-delete [channel]
-  (swap! state update-in [:collectors]
+  (swap! state update-in [:button-collectors] ; TODO add other collectors
          (fn [old-collectors]
            (let [channel-id (.-id channel)]
            (.stop (old-collectors channel-id))
