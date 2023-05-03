@@ -38,7 +38,6 @@
   (println 'SELECT-MENU-COLLECTOR)
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
-      "go"(go-command/handle-collector-event-type-button! interaction)
       ; "gg"(gg/interact! interaction)
       (println "OTHER"))
     ))
@@ -59,7 +58,6 @@
   (println 'USER-SELECT-COLLECTOR)
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
-      "go"(go-command/handle-collector-event-type-button! interaction)
       ; "gg"(gg/interact! interaction)
       (println "OTHER"))
     ))
