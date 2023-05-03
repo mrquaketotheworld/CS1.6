@@ -11,14 +11,14 @@
                  #js {:intents #js [(.-Guilds discord/GatewayIntentBits)
                                    (.-GuildVoiceStates discord/GatewayIntentBits)]}))
 
-(def state (atom {:button-collectors {} :select-menu-collectors {} }))
+(def state (atom {:button-collectors {} :select-menu-collectors {} :user-select-collectors {}}))
 
 (defn handle-collector-event-type-button! [interaction]
   (println 'BUTTON-COLLECTOR)
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
       "go"(go-command/handle-collector-event-type-button! interaction)
-      "gg"(gg/interact! interaction)
+      ; "gg"(gg/interact! interaction)
       (println "OTHER"))
     ))
 
@@ -39,7 +39,7 @@
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
       "go"(go-command/handle-collector-event-type-button! interaction)
-      "gg"(gg/interact! interaction)
+      ; "gg"(gg/interact! interaction)
       (println "OTHER"))
     ))
 
@@ -55,9 +55,31 @@
         (let [collector (get-in @state [:select-menu-collectors channel-id])]
                               (.on collector "collect" handle-collector-event-select-menu!)))))
 
+(defn handle-collector-event-user-select! [interaction]
+  (println 'USER-SELECT-COLLECTOR)
+  (let [command-name (.. interaction -message -interaction -commandName)]
+    (case command-name
+      "go"(go-command/handle-collector-event-type-button! interaction)
+      ; "gg"(gg/interact! interaction)
+      (println "OTHER"))
+    ))
+
+(defn init-collector-type-user-select [interaction]
+  (let [channel-id (.. interaction -channel -id)]
+    (when-not (get-in @state [:user-select-collectors channel-id])
+        (swap! state assoc-in [:user-select-collectors channel-id]
+               (.. interaction
+                   -channel
+                   (createMessageComponentCollector #js
+                                                    {:componentType
+                                                     (.-UserSelect discord/ComponentType)})))
+        (let [collector (get-in @state [:user-select-collectors channel-id])]
+                              (.on collector "collect" handle-collector-event-user-select!)))))
+
 (defn handle-interaction [interaction]
   (init-collector-type-button interaction)
   (init-collector-type-select-menu interaction)
+  (init-collector-type-user-select interaction)
   ; (.log js/console (.. interaction -message))
   (when (.isChatInputCommand interaction)
     (case (.-commandName interaction)
