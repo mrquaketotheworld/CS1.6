@@ -22,7 +22,7 @@
                   :interactions {}}))
 
 (def emoji-maps {
-  "Inferno:" ":fire:"
+  "Inferno" ":fire:"
   "Nuke" ":radioactive:"
   "Train" ":station:"
   "Cache" ":dollar:"

@@ -4,10 +4,11 @@
    ["discord.js" :as discord]
    [commands.quote :as quote]
    [commands.go :as go-command]
-   [commands.make-teams :as make-teams]))
+   [commands.make-teams :as make-teams]
+   [commands.gg :as gg]))
 
 
-(def commands [quote/builder make-teams/builder go-command/builder])
+(def commands [quote/builder make-teams/builder go-command/builder gg/builder])
 
 (def rest-api (.setToken (discord/REST. #js {:version 10}) TOKEN))
 
