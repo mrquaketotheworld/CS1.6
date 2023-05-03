@@ -9,6 +9,8 @@
       (setName "gg")
       (setDescription "Save the match result!")))
 
+(def state (atom {:interactions {}}))
+
 (defn generate-score-options []
   (map #(.. (discord/StringSelectMenuOptionBuilder.)
                (setLabel (str %))
@@ -19,6 +21,29 @@
                (setLabel (% "map"))
                (setValue (% "map"))) maps))
 
+(defn handle-collector-event-select-menu! [interaction]
+  (let [interaction-id (.. interaction -message -interaction -id)
+        custom-id (.-customId interaction)
+        value (first (.-values interaction))
+        ff (first (.-components (first (.. interaction -message -components))))]
+    (swap! state update-in [:interactions interaction-id] #(assoc % custom-id value))
+    (.log js/console  (.. interaction -message -components))
+    (.deferUpdate interaction)))
+
+(defn handle-collector-event-user-select! [interaction]
+  (let [interaction-id (.. interaction -message -interaction -id)
+        custom-id (.-customId interaction)
+        users (reduce (fn [acc user-item]
+                        (let [user-id (first user-item)
+                              user (second user-item)]
+                          (if (.-bot user)
+                            acc
+                            (conj acc {:user-id user-id
+                                       :username (.-username user)}))))
+                   [] (.from js/Array (.-users interaction)))]
+
+    (swap! state update-in [:interactions interaction-id] #(assoc % custom-id users))
+    (.deferUpdate interaction)))
 
 (defn interact! [interaction]
    ; FIXME unable use go <p! because of strange compilation errors
@@ -73,5 +98,3 @@
                              :ephemeral true}))
               (catch js/Error e (println "ERROR 148 go" e)))))))
           (fn [e] (println "ERROR 64 gg" e))))
-
-
