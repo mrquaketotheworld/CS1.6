@@ -18,8 +18,7 @@
                                          #js {:name "fun" :value "fun"}))))
       toJSON))
 
-(def state (atom {:collectors {}
-                  :interactions {}}))
+(def state (atom {:interactions {}}))
 
 (def emoji-maps {
   "Inferno" ":fire:"
@@ -168,7 +167,7 @@
   #js {:content (create-content interaction-id)
        :components (create-buttons interaction-id)})
 
-(defn handle-collector-event! [event]
+(defn handle-collector-event-type-button! [event]
   (let [event-interaction-id (.. event -message -interaction -id)
         map-name (.-customId event)
         user-id (.. event -user -id)
@@ -203,24 +202,6 @@
                                                                 -voice
                                                                 -channel
                                                                 -id)})))
-
-(defn init-collector [interaction channel-id]
-  (when-not (get-in @state [:collectors channel-id])
-    (swap! state assoc-in [:collectors channel-id]
-           (.. interaction
-               -channel
-               (createMessageComponentCollector #js
-                                                {:componentType
-                                                 (.-Button discord/ComponentType)})))
-    (let [collector (get-in @state [:collectors channel-id])]
-                          (.on collector "collect" handle-collector-event!))))
-
-(defn on-channel-delete [channel]
-  (swap! state update-in [:collectors]
-         (fn [old-collectors]
-           (let [channel-id (.-id channel)]
-           (.stop (old-collectors channel-id))
-           (dissoc old-collectors channel-id)))))
 
 (defn get-users-in-voice [interaction]
   (convert-users-to-string (.from js/Array
@@ -260,8 +241,7 @@
                   (<p! (.reply interaction (create-reply interaction-id)))
                   (let [users-in-voice (get-users-in-voice interaction)
                         channel-id (.. interaction -channel -id)]
-                    (<p! (.followUp interaction users-in-voice))
-                    (init-collector interaction channel-id)))
+                    (<p! (.followUp interaction users-in-voice))))
                   (<p! (.reply
                          interaction #js {:content (str "You need to be in a voice "
                                                         "channel to run map poll, "
