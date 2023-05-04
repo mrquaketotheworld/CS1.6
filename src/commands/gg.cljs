@@ -56,8 +56,8 @@
         embed-title-who-team2 (.. (discord/EmbedBuilder.)
                           (setTitle "Who played for Team 2?")
                           (setColor CYAN))]
-    (swap! state update-in [:interactions interaction-id] #(assoc % custom-id value))
     (go (try
+      (swap! state update-in [:interactions interaction-id] #(assoc % custom-id value))
       (case custom-id
         "team1-score"
           (<p! (.update interaction #js {:embeds #js [embed-title-who-team2]
@@ -176,8 +176,7 @@
                           (setTitle "What map did you play?")
                           (setColor CYAN))]
         (.apply map-select.addOptions map-select generated-options-maps)
-        (.reply interaction #js {:content "You have 3 minutes to fill out the forms."
-                                 :embeds #js [embed-title]
+        (.reply interaction #js {:embeds #js [embed-title]
                                  :components #js [map-select-row]
                                  :ephemeral true}))))
           (fn [e] (println "ERROR 183 gg" e))))
