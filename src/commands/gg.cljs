@@ -1,4 +1,4 @@
-(ns commands.gg
+(ns commands.gg ; TODO idempotent
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
@@ -11,6 +11,8 @@
 
 (def state (atom {:interactions {}}))
 
+(def CYAN "#18FFFF")
+
 (defn generate-score-options []
   (map #(.. (discord/StringSelectMenuOptionBuilder.)
                (setLabel (str %))
@@ -20,6 +22,9 @@
   (map #(.. (discord/StringSelectMenuOptionBuilder.)
                (setLabel (% "map"))
                (setValue (% "map"))) maps))
+
+(defn handle-collector-event-button-save [interaction]
+  )
 
 (defn handle-collector-event-select-menu! [interaction]
   (let [interaction-id (.. interaction -message -interaction -id)
@@ -44,10 +49,10 @@
                            (setStyle (.-Primary discord/ButtonStyle))))
         embed-title-who-team1 (.. (discord/EmbedBuilder.)
                           (setTitle "Who played for Team 1?")
-                          (setColor "#18FFFF"))
+                          (setColor CYAN))
         embed-title-who-team2 (.. (discord/EmbedBuilder.)
                           (setTitle "Who played for Team 2?")
-                          (setColor "#18FFFF"))]
+                          (setColor CYAN))]
     (swap! state update-in [:interactions interaction-id] #(assoc % custom-id value))
     (go (try
       (case custom-id
@@ -55,13 +60,28 @@
           (<p! (.update interaction #js {:embeds #js [embed-title-who-team2]
                                          :components #js [team2-row]}))
         "team2-score"
-          (<p! (.update interaction #js {:content (str (discord/codeBlock "diff"
-                                "-- The saved result of the match cannot be changed --")
-                                "Please check the information you entered and click the button:")
-                                         :components #js [button-save-row]}))
+          (let [match-info (get-in @state [:interactions interaction-id])
+                map-select (match-info "map-select")
+                team1-score (match-info "team1-score")
+                team2-score (match-info "team2-score")
+                team1-usernames
+                  (apply str (interpose ", " (map #(:username %) (match-info "team1"))))
+                team2-usernames
+                  (apply str (interpose ", " (map #(:username %) (match-info "team2"))))
+                finish-message (str map-select "\n"
+                                  team1-score " " team1-usernames "\n"
+                                  team2-score " " team2-usernames "\n\n"
+                                  "Is the data about match is correct?\n"
+                                  "If correct then click on the save button\n"
+                                  "or do nothing\n"
+                                  "or run ```/gg``` again\n"
+                                  (discord/codeBlock "diff"
+                                  "-- The saved result of the match cannot be changed --"))]
+
+            (<p! (.update interaction #js {:content finish-message
+                                         :components #js [button-save-row]})))
         "map-select"
-          (<p! (.update interaction #js {:content ""
-                                         :embeds #js [embed-title-who-team1]
+          (<p! (.update interaction #js { :embeds #js [embed-title-who-team1]
                                          :components #js [team1-row]})))
       (catch js/Error e (println "ERROR 148 go" e))))
 ))
@@ -85,26 +105,35 @@
                            (setPlaceholder "Team 2 Score"))
         embed-title-what-score-team1 (.. (discord/EmbedBuilder.)
                           (setTitle "What is the score of Team 1?")
-                          (setColor "#18FFFF"))
+                          (setColor CYAN))
         embed-title-what-score-team2 (.. (discord/EmbedBuilder.)
                           (setTitle "What is the score of Team 2?")
-                          (setColor "#18FFFF"))
+                          (setColor CYAN))
         team1-score-row (.addComponents (discord/ActionRowBuilder.) team1-score)
         team2-score-row (.addComponents (discord/ActionRowBuilder.) team2-score)
-        generated-options (clj->js (generate-score-options))
-        ]
-    (.apply team1-score.addOptions team1-score generated-options)
-    (.apply team2-score.addOptions team2-score generated-options)
-    (swap! state update-in [:interactions interaction-id] #(assoc % custom-id users))
-    (println @state)
+        generated-options (clj->js (generate-score-options))]
     (go (try
-      (case custom-id
-        "team2"
-          (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team2]
-                                         :components #js [team2-score-row]}))
-        "team1"
-          (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team1]
-                              :components #js [team1-score-row]})))
+      (if (< (count users) 2)
+        (<p! (.reply interaction #js {:content "Only user data can be saved, not bots"
+                                      :ephemeral true}))
+        (do
+          (.apply team1-score.addOptions team1-score generated-options)
+          (.apply team2-score.addOptions team2-score generated-options)
+          (swap! state update-in [:interactions interaction-id] #(assoc % custom-id users))
+          (case custom-id
+            "team2"
+              (let [match-info (get-in @state [:interactions interaction-id])
+                    team1-match-info (match-info "team1")
+                    team2-match-info (match-info "team2")
+                    team1-users-set (set (map #(:user-id %) team1-match-info))
+                    team2-users-set (set (map #(:user-id %) team2-match-info))]
+                ;TODO add validation
+                (println (= (count (clojure.set/intersection team1-users-set team2-users-set)) 0))
+                (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team2]
+                                              :components #js [team2-score-row]})))
+            "team1"
+              (<p! (.update interaction #js { :embeds #js [embed-title-what-score-team1]
+                                             :components #js [team1-score-row]})))))
       (catch js/Error e (println "ERROR 148 go" e))))))
 
 (defn interact! [interaction]
@@ -118,15 +147,19 @@
                            (.. (discord/ButtonBuilder.)
                            (setCustomId "button-save")
                            (setLabel "Save")
-                           (setStyle (.-Primary discord/ButtonStyle))))
+                           (setStyle (.-Success discord/ButtonStyle))))
           map-select-row (.addComponents (discord/ActionRowBuilder.) map-select)
           generated-options-maps (clj->js (generate-maps-options (js->clj (.-rows result))))
           embed-title (.. (discord/EmbedBuilder.)
                           (setTitle "What map did you play?")
-                          (setColor "#18FFFF"))
+                          (setColor CYAN))
           ]
         (.apply map-select.addOptions map-select generated-options-maps)
         (.reply interaction #js {:embeds #js [embed-title]
                                  :components #js [map-select-row]
                                  :ephemeral true}))))
           (fn [e] (println "ERROR 64 gg" e))))
+
+(apply str (interpose ", " '("hello" "world")))
+
+5
