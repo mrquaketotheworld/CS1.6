@@ -18,6 +18,7 @@
       (setDescription "Make random teams from voice channel!")
       toJSON))
 
+; FIXME unable? use go <p! because of strange compilation errors
 (defn interact! [interaction]
   (let [username (.. interaction -member -user -username)
         voice-channel (.. interaction -member -voice -channel)]

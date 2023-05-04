@@ -156,7 +156,7 @@
                 user-found
                 acc))) nil (get-maps interaction-id)))
 
-(defn save-user-in-maps [interaction-id user-id username map-name]
+(defn save-user-in-maps! [interaction-id user-id username map-name]
   (swap! state update-in [:interactions interaction-id :maps]
                  #(map (fn [map-item] (if (= (:map-name map-item) map-name)
                                       (update map-item :voted-users conj {:user-id user-id
@@ -186,7 +186,7 @@
                                                         (:map-name user-found) ", " username)
                                           :ephemeral true}))
                   (do
-                    (save-user-in-maps event-interaction-id user-id username map-name)
+                    (save-user-in-maps! event-interaction-id user-id username map-name)
                     (<p! (.update event (create-reply event-interaction-id)))
                     (when (:is-disabled (first (get-maps event-interaction-id)))
                       (println "RE-REQUEST: update content and buttons")
@@ -196,7 +196,7 @@
         (wrong-vote-reply event callee-voice-channel-id username))
       (wrong-vote-reply event callee-voice-channel-id username))))
 
-(defn init-interaction [interaction maps]
+(defn init-interaction! [interaction maps]
   (swap! state update :interactions
          #(assoc % (.-id interaction) { :maps maps
                                    :callee-voice-channel-id (.. interaction
@@ -239,7 +239,7 @@
                                                       (fn [old-state]
                                                         (dissoc old-state interaction-id)))) 5000)
                                       (catch js/Error e (println ERROR-MESSAGE-INTERACT e)))) 60000)
-                  (init-interaction interaction maps)
+                  (init-interaction! interaction maps)
                   (<p! (.reply interaction (create-reply interaction-id)))
                   (let [users-in-voice (get-users-in-voice interaction)
                         channel-id (.. interaction -channel -id)]
