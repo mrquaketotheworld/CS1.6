@@ -4,10 +4,10 @@
   "private": true,
   "dependencies": {
     "@discordjs/rest": "1.0.1",
-    "canvas": "^2.11.2",
-    "discord.js": "14.8.0",
+    "canvas": "2.11.2",
+    "discord.js": "14.10.2",
     "dotenv": "16.0.1",
-    "pg": "^8.10.0"
+    "pg": "8.10.0"
   },
   "devDependencies": {
     "shadow-cljs": "2.23.1"
