@@ -12,6 +12,9 @@
 (def state (atom {:interactions {}}))
 
 (def CYAN "#18FFFF")
+(def WHITE "#FFFFFF")
+(def RED "#d00a0a")
+(def GREEN "#00ce21")
 
 (defn generate-score-options []
   (map #(.. (discord/StringSelectMenuOptionBuilder.)
@@ -46,7 +49,7 @@
                            (.. (discord/ButtonBuilder.)
                            (setCustomId "button-save")
                            (setLabel "Save")
-                           (setStyle (.-Primary discord/ButtonStyle))))
+                           (setStyle (.-Success discord/ButtonStyle))))
         embed-title-who-team1 (.. (discord/EmbedBuilder.)
                           (setTitle "Who played for Team 1?")
                           (setColor CYAN))
@@ -62,24 +65,43 @@
         "team2-score"
           (let [match-info (get-in @state [:interactions interaction-id])
                 map-select (match-info "map-select")
-                team1-score (match-info "team1-score")
-                team2-score (match-info "team2-score")
+                team1-score (js/Number (match-info "team1-score"))
+                team2-score (js/Number (match-info "team2-score"))
                 team1-usernames
                   (apply str (interpose ", " (map #(:username %) (match-info "team1"))))
                 team2-usernames
                   (apply str (interpose ", " (map #(:username %) (match-info "team2"))))
-                finish-message (str map-select "\n"
-                                  team1-score " " team1-usernames "\n"
-                                  team2-score " " team2-usernames "\n\n"
-                                  "Is the data about match is correct?\n"
-                                  "If correct then click on the save button\n"
-                                  "or do nothing\n"
-                                  "or run ```/gg``` again\n"
-                                  (discord/codeBlock "diff"
-                                  "-- The saved result of the match cannot be changed --"))]
+                finish-message (str
+                                  "If the data about match is CORRECT "
+                                  "then click on the save button.\n"
+                                  "If the data about match is WRONG "
+                                  "then run `/gg` again.\n\n"
+                              (discord/bold
+                                (str ":warning: If you click on the save button, "
+                                "then saved result of the match cannot be changed :warning:\n\n")))
+                finish-message-map (.. (discord/EmbedBuilder.)
+                          (setTitle map-select)
+                          (setColor WHITE))
+                finish-message-team1 (.. (discord/EmbedBuilder.)
+                          (setTitle (str team1-score " | " team1-usernames))
+                          (setColor (cond
+                                      (< team1-score team2-score) RED
+                                      (> team1-score team2-score) GREEN
+                                      :else WHITE
+                                      )))
+                finish-message-team2 (.. (discord/EmbedBuilder.)
+                          (setTitle (str team2-score " | " team2-usernames))
+                          (setColor (cond
+                                      (> team1-score team2-score) RED
+                                      (< team1-score team2-score) GREEN
+                                      :else WHITE
+                                      )))]
 
             (<p! (.update interaction #js {:content finish-message
-                                         :components #js [button-save-row]})))
+                                           :embeds #js [finish-message-map
+                                                        finish-message-team1
+                                                        finish-message-team2]
+                                           :components #js [button-save-row]})))
         "map-select"
           (<p! (.update interaction #js { :embeds #js [embed-title-who-team1]
                                          :components #js [team1-row]})))
@@ -143,23 +165,13 @@
       (let [map-select (.. (discord/StringSelectMenuBuilder.)
                          (setCustomId "map-select")
                          (setPlaceholder "Map"))
-          button-save (.addComponents (discord/ActionRowBuilder.)
-                           (.. (discord/ButtonBuilder.)
-                           (setCustomId "button-save")
-                           (setLabel "Save")
-                           (setStyle (.-Success discord/ButtonStyle))))
           map-select-row (.addComponents (discord/ActionRowBuilder.) map-select)
           generated-options-maps (clj->js (generate-maps-options (js->clj (.-rows result))))
           embed-title (.. (discord/EmbedBuilder.)
                           (setTitle "What map did you play?")
-                          (setColor CYAN))
-          ]
+                          (setColor CYAN))]
         (.apply map-select.addOptions map-select generated-options-maps)
         (.reply interaction #js {:embeds #js [embed-title]
                                  :components #js [map-select-row]
                                  :ephemeral true}))))
           (fn [e] (println "ERROR 64 gg" e))))
-
-(apply str (interpose ", " '("hello" "world")))
-
-5
