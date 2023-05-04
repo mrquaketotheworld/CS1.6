@@ -164,9 +164,7 @@
     (fn [result]
       (js/setTimeout (fn []
         (swap! state assoc-in [:interactions (.-id interaction)] nil)
-        (.editReply interaction #js {:content "Sorry, time is up. Run `/gg` again."
-                                     :components #js []
-                                     :embeds #js []})) 180000)
+        (.deleteReply interaction)) 180000)
       (let [map-select (.. (discord/StringSelectMenuBuilder.)
                          (setCustomId "map-select")
                          (setPlaceholder "Map"))
@@ -179,4 +177,4 @@
         (.reply interaction #js {:embeds #js [embed-title]
                                  :components #js [map-select-row]
                                  :ephemeral true}))))
-          (fn [e] (println "ERROR 183 gg" e))))
+          (fn [e] (println "ERROR 180 gg" e))))
