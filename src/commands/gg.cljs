@@ -49,7 +49,7 @@
                            (.. (discord/ButtonBuilder.)
                            (setCustomId "button-save")
                            (setLabel "Save")
-                           (setStyle (.-Success discord/ButtonStyle))))
+                           (setStyle (.-Danger discord/ButtonStyle))))
         embed-title-who-team1 (.. (discord/EmbedBuilder.)
                           (setTitle "Who played for Team 1?")
                           (setColor CYAN))
@@ -162,6 +162,11 @@
    ; FIXME unable use go <p! because of strange compilation errors
   (.catch (.then (map-server/select-maps (.-guildId interaction) "main")
     (fn [result]
+      (js/setTimeout (fn []
+        (swap! state assoc-in [:interactions (.-id interaction)] nil)
+        (.editReply interaction #js {:content "Sorry, time is up. Run `/gg` again."
+                                     :components #js []
+                                     :embeds #js []})) 180000)
       (let [map-select (.. (discord/StringSelectMenuBuilder.)
                          (setCustomId "map-select")
                          (setPlaceholder "Map"))
@@ -171,7 +176,8 @@
                           (setTitle "What map did you play?")
                           (setColor CYAN))]
         (.apply map-select.addOptions map-select generated-options-maps)
-        (.reply interaction #js {:embeds #js [embed-title]
+        (.reply interaction #js {:content "You have 3 minutes to fill out the forms."
+                                 :embeds #js [embed-title]
                                  :components #js [map-select-row]
                                  :ephemeral true}))))
-          (fn [e] (println "ERROR 64 gg" e))))
+          (fn [e] (println "ERROR 183 gg" e))))
