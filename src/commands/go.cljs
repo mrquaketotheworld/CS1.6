@@ -20,6 +20,8 @@
 
 (def state (atom {:interactions {}}))
 
+(def ERROR-MESSAGE-INTERACT "ERROR interact! go")
+
 (def emoji-maps {
   "Inferno" ":fire:"
   "Nuke" ":radioactive:"
@@ -143,7 +145,7 @@
                                      (str "This is the voting of <#"
                                           callee-voice-channel-id "> voice channel, " username)
                                      :ephemeral true}))
-           (catch js/Error e (println "ERROR 148 go" e)))))
+           (catch js/Error e (println "ERROR wrong-vote-reply go" e)))))
 
 (defn find-user-in-maps [interaction-id user-id]
   (reduce (fn [acc map-item]
@@ -190,7 +192,7 @@
                       (println "RE-REQUEST: update content and buttons")
                       (<p! (.editReply event (create-reply event-interaction-id))))
                     ))
-                (catch js/Error e (println "ERROR 194 go" e)))))
+                (catch js/Error e (println "ERROR handle-collector-event-type-button! go" e)))))
         (wrong-vote-reply event callee-voice-channel-id username))
       (wrong-vote-reply event callee-voice-channel-id username))))
 
@@ -222,7 +224,7 @@
               (when (empty? server-with-maps)
                 (<p! (map-server/insert-default-maps client server-id)))
               (<p! (db/commit-transaction client))
-              (catch js/Error e (do (println "ERROR 244 go" e)
+              (catch js/Error e (do (println ERROR-MESSAGE-INTERACT e)
                                     (<p! (db/rollback-transaction client))))
               (finally (.release client)))
             (let [maps
@@ -236,7 +238,7 @@
                                         (fn [] (swap! state update-in [:interactions]
                                                       (fn [old-state]
                                                         (dissoc old-state interaction-id)))) 5000)
-                                      (catch js/Error e (println "ERROR 258 go" e)))) 60000)
+                                      (catch js/Error e (println ERROR-MESSAGE-INTERACT e)))) 60000)
                   (init-interaction interaction maps)
                   (<p! (.reply interaction (create-reply interaction-id)))
                   (let [users-in-voice (get-users-in-voice interaction)
@@ -247,4 +249,4 @@
                                                         "channel to run map poll, "
                                                         (.. interaction -member -user -username))
                                           :ephemeral true})))))
-          (catch js/Error e (println "ERROR 269 go" e))))))
+          (catch js/Error e (println ERROR-MESSAGE-INTERACT e))))))

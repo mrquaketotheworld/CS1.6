@@ -105,7 +105,7 @@
         "map-select"
           (<p! (.update interaction #js { :embeds #js [embed-title-who-team1]
                                          :components #js [team1-row]})))
-      (catch js/Error e (println "ERROR 148 go" e))))
+      (catch js/Error e (println "ERROR handle-collector-event-select-menu! gg" e))))
 ))
 
 (defn handle-collector-event-user-select! [interaction]
@@ -156,7 +156,7 @@
             "team1"
               (<p! (.update interaction #js { :embeds #js [embed-title-what-score-team1]
                                              :components #js [team1-score-row]})))))
-      (catch js/Error e (println "ERROR 148 go" e))))))
+      (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e))))))
 
 (defn interact! [interaction]
    ; FIXME unable use go <p! because of strange compilation errors
@@ -177,4 +177,4 @@
         (.reply interaction #js {:embeds #js [embed-title]
                                  :components #js [map-select-row]
                                  :ephemeral true}))))
-          (fn [e] (println "ERROR 180 gg" e))))
+          (fn [e] (println "ERROR interact! gg" e))))

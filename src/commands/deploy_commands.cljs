@@ -16,5 +16,5 @@
   (.. rest-api
       (put (.applicationCommands discord/Routes CLIENT_ID) #js {:body (clj->js commands)})
       (then #(println "Register commands SUCCESS!"))
-      (catch #(println "ERROR in register-commands:" %))))
+      (catch #(println "ERROR register-commands deploy_commands" %))))
 
