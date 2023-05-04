@@ -41,12 +41,18 @@
                            (.. (discord/ButtonBuilder.)
                            (setCustomId "button-save")
                            (setLabel "Save")
-                           (setStyle (.-Primary discord/ButtonStyle))))]
+                           (setStyle (.-Primary discord/ButtonStyle))))
+        embed-title-who-team1 (.. (discord/EmbedBuilder.)
+                          (setTitle "Who played for Team 1?")
+                          (setColor "#18FFFF"))
+        embed-title-who-team2 (.. (discord/EmbedBuilder.)
+                          (setTitle "Who played for Team 2?")
+                          (setColor "#18FFFF"))]
     (swap! state update-in [:interactions interaction-id] #(assoc % custom-id value))
     (go (try
       (case custom-id
         "team1-score"
-          (<p! (.update interaction #js {:content "Who played for Team 2?"
+          (<p! (.update interaction #js {:embeds #js [embed-title-who-team2]
                                          :components #js [team2-row]}))
         "team2-score"
           (<p! (.update interaction #js {:content (str (discord/codeBlock "diff"
@@ -54,7 +60,8 @@
                                 "Please check the information you entered and click the button:")
                                          :components #js [button-save-row]}))
         "map-select"
-          (<p! (.update interaction #js {:content "Who played for Team 1?"
+          (<p! (.update interaction #js {:content ""
+                                         :embeds #js [embed-title-who-team1]
                                          :components #js [team1-row]})))
       (catch js/Error e (println "ERROR 148 go" e))))
 ))
@@ -76,6 +83,12 @@
         team2-score (.. (discord/StringSelectMenuBuilder.)
                            (setCustomId "team2-score")
                            (setPlaceholder "Team 2 Score"))
+        embed-title-what-score-team1 (.. (discord/EmbedBuilder.)
+                          (setTitle "What is the score of Team 1?")
+                          (setColor "#18FFFF"))
+        embed-title-what-score-team2 (.. (discord/EmbedBuilder.)
+                          (setTitle "What is the score of Team 2?")
+                          (setColor "#18FFFF"))
         team1-score-row (.addComponents (discord/ActionRowBuilder.) team1-score)
         team2-score-row (.addComponents (discord/ActionRowBuilder.) team2-score)
         generated-options (clj->js (generate-score-options))
@@ -87,10 +100,10 @@
     (go (try
       (case custom-id
         "team2"
-          (<p! (.update interaction #js {:content "What is the score of Team 2?"
+          (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team2]
                                          :components #js [team2-score-row]}))
         "team1"
-          (<p! (.update interaction #js {:content "What is the score of Team 1?"
+          (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team1]
                               :components #js [team1-score-row]})))
       (catch js/Error e (println "ERROR 148 go" e))))))
 
@@ -107,9 +120,13 @@
                            (setLabel "Save")
                            (setStyle (.-Primary discord/ButtonStyle))))
           map-select-row (.addComponents (discord/ActionRowBuilder.) map-select)
-          generated-options-maps (clj->js (generate-maps-options (js->clj (.-rows result))))]
+          generated-options-maps (clj->js (generate-maps-options (js->clj (.-rows result))))
+          embed-title (.. (discord/EmbedBuilder.)
+                          (setTitle "What map did you play?")
+                          (setColor "#18FFFF"))
+          ]
         (.apply map-select.addOptions map-select generated-options-maps)
-        (.reply interaction #js {:content "What map did you play?"
+        (.reply interaction #js {:embeds #js [embed-title]
                                  :components #js [map-select-row]
                                  :ephemeral true}))))
           (fn [e] (println "ERROR 64 gg" e))))
