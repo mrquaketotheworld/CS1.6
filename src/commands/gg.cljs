@@ -4,7 +4,8 @@
             [cljs.core.async.interop :refer-macros [<p!]]
             [db.connection :as db]
             [db.models.map-server :as map-server]
-            [db.models.player :as player]))
+            [db.models.player :as player]
+            [db.models.player-server-points :as player-server-points]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -46,6 +47,7 @@
               team1-users (get-users (match-info "team1"))
               team2-users (get-users (match-info "team2"))
               users (concat team1-users team2-users)
+              server-id (.-guildId interaction)
               client (<p! (.connect db/pool))]
           (go (try
             (<p! (db/begin-transaction client))
@@ -53,7 +55,16 @@
             (doseq [user users]
               (let [user-id (:user-id user)
                     username (:username user)]
-                (<p! (player/insert-player-if-not-exists client user-id username))))
+                (<p! (player/insert-player-if-not-exists client user-id username))
+                (let [player-server (.-rows (<p! (player-server-points/select-player-by-server
+                                                   client user-id server-id)))]
+                  (when (empty? player-server)
+                    (<p! (player-server-points/insert-player
+                           client user-id server-id))))
+                
+                )
+              
+              )
             (<p! (db/commit-transaction client))
           (catch js/Error e (do (println "ERROR handle-collector-event-button-save! gg" e)
                                 (<p! (db/rollback-transaction client))))
