@@ -8,7 +8,8 @@
     "discord.js": "14.10.2",
     "dotenv": "16.0.1",
     "multi-elo": "2.2.0",
-    "pg": "8.10.0"
+    "pg": "8.10.0",
+    "simple-elo-rating": "1.0.0"
   },
   "devDependencies": {
     "shadow-cljs": "2.23.1"
