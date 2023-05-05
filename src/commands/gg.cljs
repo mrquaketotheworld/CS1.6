@@ -19,6 +19,10 @@
 (def RED "#d00a0a")
 (def GREEN "#00ce21")
 
+(defn sum-players-points [team-points]
+  (reduce (fn [acc player]
+            (+ acc (player "points"))) 0 team-points))
+
 (defn get-interaction-id [interaction]
   (.. interaction -message -interaction -id))
 
@@ -46,6 +50,8 @@
               team2-score (js/Number (match-info "team2-score"))
               team1-users (get-users (match-info "team1"))
               team2-users (get-users (match-info "team2"))
+              team1-ids (clj->js (map #(:user-id %) team1-users))
+              team2-ids (clj->js (map #(:user-id %) team2-users))
               users (concat team1-users team2-users)
               server-id (.-guildId interaction)
               client (<p! (.connect db/pool))]
@@ -60,11 +66,24 @@
                                                    client user-id server-id)))]
                   (when (empty? player-server)
                     (<p! (player-server-points/insert-player
-                           client user-id server-id))))
-                
-                )
-              
+                           client user-id server-id))))))
+            (let [team1-points
+                    (js->clj
+                      (.-rows
+                       (<p! (player-server-points/select-players-points
+                            client team1-ids server-id))))
+                  team2-points
+                    (js->clj
+                      (.-rows
+                       (<p! (player-server-points/select-players-points
+                            client team1-ids server-id))))
+                    team1-total-points (sum-players-points team1-points)
+                    team2-total-points (sum-players-points team2-points)]
+
+              (println team1-total-points)
+              (println team2-total-points)
               )
+
             (<p! (db/commit-transaction client))
           (catch js/Error e (do (println "ERROR handle-collector-event-button-save! gg" e)
                                 (<p! (db/rollback-transaction client))))
