@@ -220,7 +220,6 @@
               server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))]
             (try
               (<p! (db/begin-transaction client))
-              (<p! (server/insert-server-if-not-exists client server-id server-name))
               (when (empty? server-with-maps)
                 (<p! (map-server/insert-default-maps client server-id)))
               (<p! (db/commit-transaction client))

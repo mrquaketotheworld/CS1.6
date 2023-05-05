@@ -1,11 +1,14 @@
 (ns core
   (:require ["discord.js" :as discord]
+            [cljs.core.async :refer [go]]
+            [cljs.core.async.interop :refer-macros [<p!]]
             [config :refer [TOKEN]]
             [commands.quote :as quote]
             [commands.make-teams :as make-teams]
             [commands.go :as go-command]
             [commands.deploy-commands :as deploy]
-            [commands.gg :as gg]))
+            [commands.gg :as gg]
+            [db.models.server :as server]))
 
 (def client (discord/Client.
                  #js {:intents #js [(.-Guilds discord/GatewayIntentBits)
@@ -75,17 +78,21 @@
                               (.on collector "collect" handle-collector-event-user-select!)))))
 
 (defn handle-interaction [interaction]
-  (init-collector-type-button interaction)
-  (init-collector-type-select-menu interaction)
-  (init-collector-type-user-select interaction)
-  ; (.log js/console (.. interaction -message))
-  (when (.isChatInputCommand interaction)
-    (case (.-commandName interaction)
-      "quote" (quote/interact! interaction)
-      "make-teams"(make-teams/interact! interaction)
-      "go"(go-command/interact! interaction)
-      "gg"(gg/interact! interaction)
-      (println "OTHER"))))
+  (go (try
+        (let [server-id (.. interaction -guild -id)
+              server-name (.. interaction -guild -name)]
+        (init-collector-type-button interaction)
+        (init-collector-type-select-menu interaction)
+        (init-collector-type-user-select interaction)
+        (<p! (server/insert-server-if-not-exists server-id server-name))
+        (when (.isChatInputCommand interaction)
+          (case (.-commandName interaction)
+            "quote" (quote/interact! interaction)
+            "make-teams"(make-teams/interact! interaction)
+            "go"(go-command/interact! interaction)
+            "gg"(gg/interact! interaction)
+            (println "OTHER"))))
+  (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
 (defn on-channel-delete [channel]
   (swap! state update-in [:button-collectors] ; TODO add other collectors
