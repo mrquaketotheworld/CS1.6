@@ -218,14 +218,8 @@
     (go (try
           (let [client (<p! (.connect db/pool))
               server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))]
-            (try
-              (<p! (db/begin-transaction client))
               (when (empty? server-with-maps)
-                (<p! (map-server/insert-default-maps client server-id)))
-              (<p! (db/commit-transaction client))
-              (catch js/Error e (do (println ERROR-MESSAGE-INTERACT e)
-                                    (<p! (db/rollback-transaction client))))
-              (finally (.release client)))
+                (<p! (map-server/insert-default-maps server-id)))
             (let [maps
                   (format-maps (js->clj (.-rows (<p! (map-server/select-maps server-id option)))))]
               (if (.. interaction -member -voice -channel)
