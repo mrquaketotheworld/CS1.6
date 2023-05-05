@@ -80,7 +80,7 @@
                     (js->clj
                       (.-rows
                        (<p! (player-server-points/select-players-points
-                            client team1-ids server-id))))
+                            client team2-ids server-id))))
                     team1-total-points (sum-players-points team1-points)
                     team2-total-points (sum-players-points team2-points)
                     elo-K-factor 160
