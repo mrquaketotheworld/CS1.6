@@ -21,7 +21,7 @@
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
       "go"(go-command/handle-collector-event-type-button! interaction)
-      ; "gg"(gg/interact! interaction)
+      "gg"(gg/handle-collector-event-button-save! interaction)
       (println "OTHER"))
     ))
 

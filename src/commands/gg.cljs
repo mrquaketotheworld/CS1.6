@@ -16,6 +16,15 @@
 (def RED "#d00a0a")
 (def GREEN "#00ce21")
 
+(defn get-interaction-id [interaction]
+  (.. interaction -message -interaction -id))
+
+(defn get-match-info [interaction-id]
+  (get-in @state [:interactions interaction-id]))
+
+(defn get-users [team]
+  (map #(identity {:username (:username %) :user-id (:user-id %)}) team))
+
 (defn generate-score-options []
   (map #(.. (discord/StringSelectMenuOptionBuilder.)
                (setLabel (str %))
@@ -26,11 +35,23 @@
                (setLabel (% "map"))
                (setValue (% "map"))) maps))
 
-(defn handle-collector-event-button-save [interaction]
-  )
+(defn handle-collector-event-button-save! [interaction]
+  (go (try
+        (let [match-info (get-match-info (get-interaction-id interaction))
+              map-select (match-info "map-select")
+              team1-score (js/Number (match-info "team1-score"))
+              team2-score (js/Number (match-info "team2-score"))
+              users-team1 (get-users (match-info "team1"))
+              users-team2 (get-users (match-info "team2"))]
+          (println match-info team1-score team2-score users-team1)
+          ; TODO validate qty players to 10
+
+          
+          )
+        (catch js/Error e (println "ERROR handle-collector-event-button-save! gg" e)))))
 
 (defn handle-collector-event-select-menu! [interaction]
-  (let [interaction-id (.. interaction -message -interaction -id)
+  (let [interaction-id (get-interaction-id interaction)
         custom-id (.-customId interaction)
         value (first (.-values interaction))
         team1-row (.addComponents (discord/ActionRowBuilder.)
@@ -63,7 +84,7 @@
           (<p! (.update interaction #js {:embeds #js [embed-title-who-team2]
                                          :components #js [team2-row]}))
         "team2-score"
-          (let [match-info (get-in @state [:interactions interaction-id])
+          (let [match-info (get-match-info interaction-id)
                 map-select (match-info "map-select")
                 team1-score (js/Number (match-info "team1-score"))
                 team2-score (js/Number (match-info "team2-score"))
@@ -84,7 +105,7 @@
                           (setColor WHITE))
                 finish-message-team1 (.. (discord/EmbedBuilder.)
                           (setTitle (str team1-score " | " team1-usernames))
-                          (setColor (cond
+                          (setColor (cond ; TODO move logic to function
                                       (< team1-score team2-score) RED
                                       (> team1-score team2-score) GREEN
                                       :else WHITE
@@ -109,12 +130,12 @@
 ))
 
 (defn handle-collector-event-user-select! [interaction]
-  (let [interaction-id (.. interaction -message -interaction -id)
+  (let [interaction-id (get-interaction-id interaction)
         custom-id (.-customId interaction)
         users (reduce (fn [acc user-item]
                         (let [user-id (first user-item)
                               user (second user-item)]
-                          (if (.-bot user)
+                          (if nil ; TODO nil is for test
                             acc
                             (conj acc {:user-id user-id
                                        :username (.-username user)}))))
