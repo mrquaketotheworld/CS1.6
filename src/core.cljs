@@ -17,7 +17,6 @@
 (def state (atom {:button-collectors {} :select-menu-collectors {} :user-select-collectors {}}))
 
 (defn handle-collector-event-type-button! [interaction]
-  (println 'BUTTON-COLLECTOR)
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
       "go"(go-command/handle-collector-event-type-button! interaction)
@@ -38,7 +37,6 @@
                               (.on collector "collect" handle-collector-event-type-button!)))))
 
 (defn handle-collector-event-select-menu! [interaction]
-  (println 'SELECT-MENU-COLLECTOR)
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
        "gg" (gg/handle-collector-event-select-menu! interaction)
@@ -58,7 +56,6 @@
                               (.on collector "collect" handle-collector-event-select-menu!)))))
 
 (defn handle-collector-event-user-select! [interaction]
-  (println 'USER-SELECT-COLLECTOR)
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
       "gg"(gg/handle-collector-event-user-select! interaction)

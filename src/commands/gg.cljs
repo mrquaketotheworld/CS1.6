@@ -2,7 +2,9 @@
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
-            [db.models.map-server :as map-server]))
+            [db.connection :as db]
+            [db.models.map-server :as map-server]
+            [db.models.player :as player]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -41,14 +43,22 @@
               map-select (match-info "map-select")
               team1-score (js/Number (match-info "team1-score"))
               team2-score (js/Number (match-info "team2-score"))
-              users-team1 (get-users (match-info "team1"))
-              users-team2 (get-users (match-info "team2"))]
-          (println match-info team1-score team2-score users-team1)
-          ; TODO validate qty players to 10
-
-          
-          )
-        (catch js/Error e (println "ERROR handle-collector-event-button-save! gg" e)))))
+              team1-users (get-users (match-info "team1"))
+              team2-users (get-users (match-info "team2"))
+              users (concat team1-users team2-users)
+              client (<p! (.connect db/pool))]
+          (go (try
+            (<p! (db/begin-transaction client))
+            ; TODO validate qty players to 10
+            (doseq [user users]
+              (let [user-id (:user-id user)
+                    username (:username user)]
+                (<p! (player/insert-player-if-not-exists client user-id username))))
+            (<p! (db/commit-transaction client))
+          (catch js/Error e (do (println "ERROR handle-collector-event-button-save! gg" e)
+                                (<p! (db/rollback-transaction client))))
+          (finally (.release client)))))
+        (catch js/Error e (do (println "ERROR handle-collector-event-button-save! gg" e))))))
 
 (defn handle-collector-event-select-menu! [interaction]
   (let [interaction-id (get-interaction-id interaction)

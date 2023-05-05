@@ -216,8 +216,7 @@
         interaction-id (.-id interaction)]
     (println "/go INTERACTION" (js/Date.))
     (go (try
-          (let [client (<p! (.connect db/pool))
-              server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))]
+          (let [server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))]
               (when (empty? server-with-maps)
                 (<p! (map-server/insert-default-maps server-id)))
             (let [maps
