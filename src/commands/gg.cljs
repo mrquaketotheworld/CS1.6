@@ -2,6 +2,7 @@
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
+            ["simple-elo-rating" :as elo]
             [db.connection :as db]
             [db.models.map-server :as map-server]
             [db.models.player :as player]
@@ -78,10 +79,18 @@
                        (<p! (player-server-points/select-players-points
                             client team1-ids server-id))))
                     team1-total-points (sum-players-points team1-points)
-                    team2-total-points (sum-players-points team2-points)]
+                    team2-total-points (sum-players-points team2-points)
+                    elo-K-factor 160
+                    elo-basic (.. (elo/Elo. elo-K-factor)
+                                  (playerA team1-total-points)
+                                  (playerB team2-total-points))
+                    elo-result (.. (cond
+                                     (> team1-score team2-score) (.setWinnerA elo-basic)
+                                     (< team1-score team2-score) (.setWinnerB elo-basic)
+                                     :else (.setDraw elo-basic))
+                                   calculate
+                                   getResults)]
 
-              (println team1-total-points)
-              (println team2-total-points)
               )
 
             (<p! (db/commit-transaction client))
