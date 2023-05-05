@@ -43,6 +43,9 @@
                (setLabel (% "map"))
                (setValue (% "map"))) maps))
 
+(defn calculate-points-for-one-player [team-points-elo-diff players]
+  (js/Number (.toFixed (/ team-points-elo-diff (count players)) 2)))
+
 (defn handle-collector-event-button-save! [interaction]
   (go (try
         (let [match-info (get-match-info (get-interaction-id interaction))
@@ -89,7 +92,23 @@
                                      (< team1-score team2-score) (.setWinnerB elo-basic)
                                      :else (.setDraw elo-basic))
                                    calculate
-                                   getResults)]
+                                   getResults)
+                    team1-points-elo-diff (- (first elo-result) team1-total-points)
+                    team2-points-elo-diff (- (second elo-result) team2-total-points)
+                    team1-points-to-every-player
+                      (calculate-points-for-one-player team1-points-elo-diff team1-users)
+                    team2-points-to-every-player
+                      (calculate-points-for-one-player team2-points-elo-diff team2-users)]
+              (doseq [team1-player-id team1-ids]
+                (println team1-player-id team1-points-to-every-player)
+                (<p! (player-server-points/update-player-points
+                       client team1-player-id server-id team1-points-to-every-player))
+                )
+              (doseq [team2-player-id team2-ids]
+                (println team2-player-id team2-points-to-every-player)
+                (<p! (player-server-points/update-player-points
+                       client team2-player-id server-id team2-points-to-every-player))
+                )
 
               )
 

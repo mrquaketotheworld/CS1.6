@@ -15,3 +15,9 @@
   "INSERT INTO player_server_points (player_id, server_id) VALUES ($1, $2)"
     #js [player-id server_id]))
 
+(defn update-player-points [client player-id server_id points]
+  (.query client
+  "UPDATE player_server_points SET points = points + $1 WHERE player_id = $2 AND server_id = $3"
+    #js [points player-id server_id]))
+
+
