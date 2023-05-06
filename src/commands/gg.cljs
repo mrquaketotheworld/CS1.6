@@ -6,7 +6,8 @@
             [db.connection :as db]
             [db.models.map-server :as map-server]
             [db.models.player :as player]
-            [db.models.player-server-points :as player-server-points]))
+            [db.models.player-server-points :as player-server-points]
+            [db.models.team :as team]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -98,18 +99,20 @@
                     team1-points-to-every-player
                       (calculate-points-for-one-player team1-points-elo-diff team1-users)
                     team2-points-to-every-player
-                      (calculate-points-for-one-player team2-points-elo-diff team2-users)]
+                      (calculate-points-for-one-player team2-points-elo-diff team2-users)
+                    team1-id
+                      ((first (js->clj (.-rows (<p! (team/insert-generate-team-id client))))) "id")
+                    team2-id
+                    ((first (js->clj (.-rows (<p! (team/insert-generate-team-id client))))) "id")]
               (doseq [team1-player-id team1-ids]
                 (println team1-player-id team1-points-to-every-player)
                 (<p! (player-server-points/update-player-points
-                       client team1-player-id server-id team1-points-to-every-player))
-                )
+                       client team1-player-id server-id team1-points-to-every-player)))
               (doseq [team2-player-id team2-ids]
                 (println team2-player-id team2-points-to-every-player)
                 (<p! (player-server-points/update-player-points
-                       client team2-player-id server-id team2-points-to-every-player))
-                )
-
+                       client team2-player-id server-id team2-points-to-every-player)))
+              (println team1-id team2-id)
               )
 
             (<p! (db/commit-transaction client))
