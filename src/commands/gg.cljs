@@ -7,7 +7,9 @@
             [db.models.map-server :as map-server]
             [db.models.player :as player]
             [db.models.player-server-points :as player-server-points]
-            [db.models.team :as team]))
+            [db.models.team :as team]
+            [db.models.player-team-server :as player-team-server]
+            [db.models.match :as match]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -76,12 +78,12 @@
                     (js->clj
                       (.-rows
                        (<p! (player-server-points/select-players-points
-                            client team1-ids server-id))))
+                            client (clj->js team1-ids) server-id))))
                   team2-points
                     (js->clj
                       (.-rows
                        (<p! (player-server-points/select-players-points
-                            client team2-ids server-id))))
+                            client (clj->js team2-ids) server-id))))
                     team1-total-points (sum-players-points team1-points)
                     team2-total-points (sum-players-points team2-points)
                     elo-K-factor 160
@@ -113,6 +115,25 @@
                 (<p! (player-server-points/update-player-points
                        client team2-player-id server-id team2-points-to-every-player)))
               (println team1-id team2-id)
+              (<p! (player-team-server/insert-team client
+                                                   (nth team1-ids 0)
+                                                   (nth team1-ids 1)
+                                                   (nth team1-ids 2)
+                                                   (nth team1-ids 3)
+                                                   (nth team1-ids 4)
+                                                   team1-id
+                                                   server-id))
+              (<p! (player-team-server/insert-team client
+                                                   (nth team2-ids 0)
+                                                   (nth team2-ids 1)
+                                                   (nth team2-ids 2)
+                                                   (nth team2-ids 3)
+                                                   (nth team2-ids 4)
+                                                   team2-id
+                                                   server-id))
+              (<p!
+                (match/insert-match client map-select team1-score team2-score team1-id team2-id))
+
               )
 
             (<p! (db/commit-transaction client))
