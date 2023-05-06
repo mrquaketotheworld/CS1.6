@@ -22,6 +22,21 @@
 (def WHITE "#FFFFFF")
 (def RED "#d00a0a")
 (def GREEN "#00ce21")
+(def LIGHT_BLACK "#2b2d31")
+
+(defn create-team-embed [main-team-score opponent-teams-score main-team-usernames]
+  (.. (discord/EmbedBuilder.)
+      (setTitle (str main-team-score " | " main-team-usernames))
+      (setColor (cond
+                  (< main-team-score opponent-teams-score) RED
+                  (> main-team-score opponent-teams-score) GREEN
+                  :else WHITE
+                  ))))
+
+(defn create-map-embed [map-select]
+  (.. (discord/EmbedBuilder.)
+      (setTitle map-select)
+      (setColor LIGHT_BLACK)))
 
 (defn sum-players-points [team-points]
   (reduce (fn [acc player]
@@ -192,24 +207,9 @@
                               (discord/bold
                                 (str ":warning: If you click on the save button, "
                                 "then saved result of the match cannot be changed :warning:\n\n")))
-                finish-message-map (.. (discord/EmbedBuilder.)
-                          (setTitle map-select)
-                          (setColor WHITE))
-                finish-message-team1 (.. (discord/EmbedBuilder.)
-                          (setTitle (str team1-score " | " team1-usernames))
-                          (setColor (cond ; TODO move logic to function
-                                      (< team1-score team2-score) RED
-                                      (> team1-score team2-score) GREEN
-                                      :else WHITE
-                                      )))
-                finish-message-team2 (.. (discord/EmbedBuilder.)
-                          (setTitle (str team2-score " | " team2-usernames))
-                          (setColor (cond
-                                      (> team1-score team2-score) RED
-                                      (< team1-score team2-score) GREEN
-                                      :else WHITE
-                                      )))]
-
+                finish-message-map (create-map-embed map-select)
+                finish-message-team1 (create-team-embed team1-score team2-score team1-usernames)
+                finish-message-team2 (create-team-embed team2-score team1-score team2-usernames)]
             (<p! (.update interaction #js {:content finish-message
                                            :embeds #js [finish-message-map
                                                         finish-message-team1
