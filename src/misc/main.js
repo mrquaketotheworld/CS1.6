@@ -32,7 +32,7 @@ function makeContextFirstColumn() {
 loadImage('nanax_logo.png').then((image) => {
   ctx.fillStyle = 'black'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
-  ctx.globalAlpha = '0.2';
+  ctx.globalAlpha = '0.22';
   ctx.drawImage(image, 50, 0, image.naturalWidth, image.naturalHeight)
   ctx.globalAlpha = '1';
   ctx.font = '28px Oswald';
@@ -76,11 +76,11 @@ loadImage('nanax_logo.png').then((image) => {
   ctx.fillText('58%', 595, 210)
 
   makeContextFirstColumn();
-  ctx.fillText('Points', 230, 245)
+  ctx.fillText('Points', 230, 210)
   makeContextSecondColumn();
-  ctx.fillText('332.32', 326, 245)
+  ctx.fillText('332.32', 326, 210)
   ctx.fillStyle = colorsRanks['Strawberry Legend'];
-  ctx.fillText('Strawberry Legend', 230, 210)
+  ctx.fillText('"Strawberry Legend"', 230, 245)
 
   makeContextFirstColumn();
   ctx.fillText('NANAX Points', 488, 245)
