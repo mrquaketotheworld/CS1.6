@@ -2,8 +2,8 @@ CREATE TABLE player (
   player_id VARCHAR(255) PRIMARY KEY,
   player VARCHAR(255) NOT NULL,
   nanax_points INT DEFAULT 0 NOT NULL,
-  tag VARCHAR(255) DEFAULT '?' NOT NULL,
-  country VARCHAR(255) DEFAULT '?' NOT NULL,
+  tag VARCHAR(255) DEFAULT 'UNKNOWN' NOT NULL,
+  country VARCHAR(255) DEFAULT 'UNKNOWN' NOT NULL REFERENCES country(country),
   created_at timestamptz DEFAULT NOW() NOT NULL,
   updated_at timestamptz DEFAULT NOW() NOT NULL
 );
