@@ -20,8 +20,8 @@
       (catch #(println "ERROR register-commands deploy_commands" %))))
 
 (defn register-guild-commands []
-  (.. rest-api
-      (put (.applicationGuildCommands discord/Routes CLIENT_ID 1008416729065607179)
+  (.. rest-api ; TODO change guildId
+      (put (.applicationGuildCommands discord/Routes CLIENT_ID "1008416729065607179")
            #js {:body (clj->js guild-commands)})
       (then #(println "Register guild commands SUCCESS!"))
       (catch #(println "ERROR register-guild-commands deploy_commands" %))))

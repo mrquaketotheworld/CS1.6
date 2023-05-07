@@ -77,9 +77,15 @@
         (when (.isChatInputCommand interaction)
           (case (.-commandName interaction)
             "quote" (quote/interact! interaction)
-            "make-teams"(make-teams/interact! interaction)
-            "go"(go-command/interact! interaction)
-            "gg"(gg/interact! interaction))))
+            "make-teams" (make-teams/interact! interaction)
+            "go" (go-command/interact! interaction)
+            "gg" (do ; TODO change role id
+                   (if (.has (.. interaction -member -roles -cache) "1104708258406608936")
+                     (gg/interact! interaction)
+                     (<p!
+                       (.reply interaction #js
+                               {:content "Sorry, you do not have permissions to use this command"
+                                :ephemeral true})))))))
   (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
 (defn delete-collectors [collectors-type channel]
