@@ -1,4 +1,4 @@
-(ns commands.get ; TODO drop column color, add camper
+(ns commands.get ; TODO drop column color, add camper, move right column left -1px
   (:require [discord.js :as discord] ; TODO refactor names
             ["fs/promises" :as fs]
             [cljs.core.async :refer [go]]
@@ -6,7 +6,8 @@
             [canvas :as canvas-lib]
             [db.models.player :as player]
             [db.models.player-server-points :as player-server-points]
-            [db.models.rank :as rank]))
+            [db.models.rank :as rank]
+            [utils.db-utils :as db-utils]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -60,12 +61,12 @@
             user (.. interaction -user)
             user-id (.-id user)
             username (.-username user) ; TODO refactor first js->clj
-            player-info (first (js->clj (.-rows (<p! (player/select-player user-id)))))
-            player-points ((first (js->clj (.-rows (<p!
-                                                     (player-server-points/select-player-by-server
-                                                       user-id server-id))))) "points")
-            rank-name ((first (js->clj (.-rows (<p! (rank/select-rank-by-points
-                                                      (.floor js/Math player-points)))))) "rank")
+            player-info (db-utils/get-first-formatted-row (<p! (player/select-player user-id)))
+            player-points ((db-utils/get-first-formatted-row
+                            (<p! (player-server-points/select-player-by-server
+                                  user-id server-id))) "points")
+            rank-name ((db-utils/get-first-formatted-row (<p! (rank/select-rank-by-points
+                                                          (.floor js/Math player-points)))) "rank")
             rank-color (rank-colors rank-name)]
         (fill-style "black")
         (.fillRect context 0 0 (.-width canvas) (.-height canvas))
