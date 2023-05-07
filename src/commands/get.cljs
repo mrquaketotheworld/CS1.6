@@ -57,8 +57,8 @@
       (let [server-id (.. interaction -guild -id)
             user (.. interaction -user)
             user-id (.-id user)
-            username (.-username user)]
-        (.log js/console server-id user-id username)
+            username (.-username user)
+            player-info (first (js->clj (.-rows (<p! (player/select-player user-id)))))]
         (fill-style "black")
         (.fillRect context 0 0 (.-width canvas) (.-height canvas))
         (global-alpha 0.22)
@@ -68,14 +68,14 @@
         (fill-style "white")
 
         (make-context-first-column)
-        (fill-text "Country" 230 56) ; TODO fix DB
+        (fill-text "Country" 230 56)
         (make-context-second-column)
-        (fill-text "Switzerland" 326 56) ; TODO
+        (fill-text (player-info "country") 326 56)
 
         (make-context-first-column)
         (fill-text "Tag" 230 91)
         (make-context-second-column)
-        (fill-text "Navi" 326 91) ; TODO
+        (fill-text (player-info "tag") 326 91)
 
         (make-context-first-column)
         (fill-text "Wins" 489 56)
@@ -112,7 +112,7 @@
         (make-context-first-column)
         (fill-text "NANAX Points" 489 244)
         (make-context-second-column)
-        (fill-text "5" 644 244)
+        (fill-text (player-info "nanax_points") 644 244)
         (fill-style "white")
         (font "43px \"Oswald\"")
         (fill-text "#153" 32 244) ; TODO DB
@@ -121,7 +121,7 @@
           (.drawImage context image 32 32 128 128)
           (font "57px \"Military Poster\"")
           (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
-          (fill-text "macautribes" 64 174) ; TODO DB
+          (fill-text username 64 174)
           (<p! (.writeFile fs "src/assets/stats.png" (.toBuffer canvas "image/png")))
           (<p! (.reply interaction #js {:files #js ["src/assets/stats.png"]}))))
       (catch js/Error e (do (println "ERROR on-first-image-load get" e)))))))
