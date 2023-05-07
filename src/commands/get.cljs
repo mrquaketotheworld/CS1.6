@@ -62,34 +62,34 @@
     (fill-style "white")
 
     (make-context-first-column)
-    (fill-text "Country" 230 55) ; TODO fix DB
+    (fill-text "Country" 230 56) ; TODO fix DB
     (make-context-second-column)
-    (fill-text "Switzerland" 326 55) ; TODO
+    (fill-text "Switzerland" 326 56) ; TODO
 
     (make-context-first-column)
-    (fill-text "Tag" 230 90)
+    (fill-text "Tag" 230 91)
     (make-context-second-column)
-    (fill-text "Navi" 326 90) ; TODO
+    (fill-text "Navi" 326 91) ; TODO
 
     (make-context-first-column)
-    (fill-text "Wins" 488 55)
+    (fill-text "Wins" 488 56)
     (make-context-second-column)
-    (fill-text "3242" 570 55) ; TODO DB
+    (fill-text "3242" 570 56) ; TODO DB
 
     (make-context-first-column)
-    (fill-text "Losses" 488 90)
+    (fill-text "Losses" 488 91)
     (make-context-second-column)
-    (fill-text "3242" 570 90) ; TODO DB
+    (fill-text "3242" 570 91) ; TODO DB
 
     (make-context-first-column)
-    (fill-text "Draws" 488 125)
+    (fill-text "Draws" 488 126)
     (make-context-second-column)
-    (fill-text "3232" 570 125) ; TODO DB
+    (fill-text "3232" 570 126) ; TODO DB
 
     (make-context-first-column)
-    (fill-text "Total" 488 160) ; TODO DB
+    (fill-text "Total" 488 161) ; TODO DB
     (make-context-second-column)
-    (fill-text "3234" 570 160) ; TODO DB
+    (fill-text "3234" 570 161) ; TODO DB
 
     (make-context-first-column)
     (fill-text "Win Rate" 488 210)
@@ -113,7 +113,7 @@
     (go (try
           (let [image (<p! (canvas-lib/loadImage
                             (.. interaction -user (displayAvatarURL #js {:extension "jpg"}))))]
-            (.drawImage context image 32 31 128 128)
+            (.drawImage context image 32 32 128 128)
             (font "57px \"Military Poster\"")
             (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
             (fill-text "macautribes" 60 175) ; TODO DB
