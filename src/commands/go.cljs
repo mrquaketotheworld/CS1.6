@@ -4,7 +4,8 @@
             [cljs.core.async.interop :refer-macros [<p!]]
             [db.connection :as db]
             [db.models.server :as server]
-            [db.models.map-server :as map-server]))
+            [db.models.map-server :as map-server]
+            [utils.db-utils :as db-utils]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -220,7 +221,8 @@
               (when (empty? server-with-maps)
                 (<p! (map-server/insert-default-maps server-id)))
             (let [maps
-                  (format-maps (js->clj (.-rows (<p! (map-server/select-maps server-id option)))))]
+                  (format-maps (db-utils/get-formatted-rows
+                                 (<p! (map-server/select-maps server-id option))))]
               (if (.. interaction -member -voice -channel)
                 (do
                   (js/setTimeout #(go (try
