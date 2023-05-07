@@ -24,6 +24,9 @@
 (def GREEN "#00ce21")
 (def LIGHT_BLACK "#2b2d31")
 
+(defn delete-interaction-from-state [interaction-id]
+  (swap! state assoc-in [:interactions interaction-id] nil))
+
 (defn create-team-embed [main-team-score opponent-teams-score main-team-usernames]
   (.. (discord/EmbedBuilder.)
       (setTitle (str main-team-score " | " main-team-usernames))
@@ -64,9 +67,14 @@
 (defn calculate-points-for-one-player [team-points-elo-diff players]
   (js/Number (.toFixed (/ team-points-elo-diff (count players)) 2)))
 
+(defn create-user-list-string [team-info]
+  (apply str (interpose ", " (map #(:username %) team-info))))
+
 (defn handle-collector-event-button-save! [interaction]
   (go (try
         (let [match-info (get-match-info (get-interaction-id interaction))
+              team1-usernames (create-user-list-string (match-info "team1"))
+              team2-usernames (create-user-list-string (match-info "team2"))
               map-select (match-info "map-select")
               team1-score (js/Number (match-info "team1-score"))
               team2-score (js/Number (match-info "team2-score"))
@@ -87,8 +95,7 @@
                 (let [player-server (.-rows (<p! (player-server-points/select-player-by-server
                                                    client user-id server-id)))]
                   (when (empty? player-server)
-                    (<p! (player-server-points/insert-player
-                           client user-id server-id))))))
+                    (<p! (player-server-points/insert-player client user-id server-id))))))
             (let [team1-points
                     (js->clj
                       (.-rows
@@ -148,8 +155,16 @@
                                                    server-id))
               (<p!
                 (match/insert-match client map-select team1-score team2-score team1-id team2-id))
-
-              )
+              (delete-interaction-from-state (get-interaction-id interaction))
+              (<p! (.update interaction #js {:embeds #js []
+                                             :content "Match successfully saved!"
+                                             :components #js []}))
+              (<p! (.followUp interaction
+                                #js {:content
+                                         (str "Saved by <@" (.. interaction -user -id) ">")
+                                     :embeds #js [(create-map-embed map-select)
+                                   (create-team-embed team1-score team2-score team1-usernames)
+                                   (create-team-embed team2-score team1-score team2-usernames)]})))
 
             (<p! (db/commit-transaction client))
           (catch js/Error e (do (println "ERROR handle-collector-event-button-save! gg" e)
@@ -195,10 +210,8 @@
                 map-select (match-info "map-select")
                 team1-score (js/Number (match-info "team1-score"))
                 team2-score (js/Number (match-info "team2-score"))
-                team1-usernames
-                  (apply str (interpose ", " (map #(:username %) (match-info "team1"))))
-                team2-usernames
-                  (apply str (interpose ", " (map #(:username %) (match-info "team2"))))
+                team1-usernames (create-user-list-string (match-info "team1"))
+                team2-usernames (create-user-list-string (match-info "team2"))
                 finish-message (str
                                   "If the data about match is CORRECT "
                                   "then click on the save button.\n"
@@ -276,8 +289,13 @@
   (.catch (.then (map-server/select-maps (.-guildId interaction) "main")
     (fn [result]
       (js/setTimeout (fn []
-        (swap! state assoc-in [:interactions (.-id interaction)] nil)
-        (.deleteReply interaction)) 180000)
+        (let [interaction-id (.-id interaction)
+              match-info (get-match-info interaction-id)]
+          (when match-info
+            (println 'INTERACTION-PENDING-TIMEOUT-REMOVE-EXECUTED)
+            (delete-interaction-from-state interaction-id)
+            (.deleteReply interaction))
+          )) 180000)
       (let [map-select (.. (discord/StringSelectMenuBuilder.)
                          (setCustomId "map-select")
                          (setPlaceholder "Map"))
