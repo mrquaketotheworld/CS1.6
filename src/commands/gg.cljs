@@ -20,6 +20,7 @@
 
 (def USERS-NUMBER 10)
 (def HALF-USERS-NUMBER (/ USERS-NUMBER 2))
+(def MINUTES-3 180000)
 (def CYAN "#18FFFF")
 (def WHITE "#FFFFFF")
 (def RED "#d00a0a")
@@ -261,7 +262,7 @@
         team2-score-row (.addComponents (discord/ActionRowBuilder.) team2-score)
         generated-options (clj->js (generate-score-options))]
     (go (try
-      (if (< (count users) 2)
+      (if (< (count users) USERS-NUMBER)
         (<p! (.reply interaction #js {:content "Only user data can be saved, not bots"
                                       :ephemeral true}))
         (do
@@ -296,8 +297,7 @@
           (when match-info
             (println 'INTERACTION-PENDING-TIMEOUT-REMOVE-EXECUTED)
             (delete-interaction-from-state interaction-id)
-            (.deleteReply interaction))
-          )) 180000)
+            (.deleteReply interaction)))) MINUTES-3)
       (let [map-select (.. (discord/StringSelectMenuBuilder.)
                          (setCustomId "map-select")
                          (setPlaceholder "Map"))
