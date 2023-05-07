@@ -9,7 +9,8 @@
             [db.models.player-server-points :as player-server-points]
             [db.models.team :as team]
             [db.models.player-team-server :as player-team-server]
-            [db.models.match :as match]))
+            [db.models.match :as match]
+            [utils.db-utils :as db-utils]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -18,8 +19,7 @@
 
 (def state (atom {:interactions {}}))
 
-(def USERS-NUMBER 10)
-(def HALF-USERS-NUMBER (/ USERS-NUMBER 2))
+(def TEAM-NUMBER 5)
 (def MINUTES-3 180000)
 (def CYAN "#18FFFF")
 (def WHITE "#FFFFFF")
@@ -128,10 +128,10 @@
                       (calculate-points-for-one-player team1-points-elo-diff team1-users)
                     team2-points-to-every-player
                       (calculate-points-for-one-player team2-points-elo-diff team2-users)
-                    team1-id
-                      ((first (js->clj (.-rows (<p! (team/insert-generate-team-id client))))) "id")
-                    team2-id
-                    ((first (js->clj (.-rows (<p! (team/insert-generate-team-id client))))) "id")]
+                    team1-id ((db-utils/get-first-formatted-row
+                              (<p! (team/insert-generate-team-id client))) "id")
+                    team2-id ((db-utils/get-first-formatted-row
+                                 (<p! (team/insert-generate-team-id client))) "id")]
               (doseq [team1-player-id team1-ids]
                 (<p! (player-server-points/update-player-points
                        client team1-player-id server-id team1-points-to-every-player)))
@@ -181,14 +181,14 @@
                      (.. (discord/UserSelectMenuBuilder.)
                      (setCustomId "team1")
                      (setPlaceholder "Team 1")
-                     (setMinValues HALF-USERS-NUMBER)
-                     (setMaxValues HALF-USERS-NUMBER)))
+                     (setMinValues TEAM-NUMBER)
+                     (setMaxValues TEAM-NUMBER)))
         team2-row (.addComponents (discord/ActionRowBuilder.)
                      (.. (discord/UserSelectMenuBuilder.)
                      (setCustomId "team2")
                      (setPlaceholder "Team 2")
-                     (setMinValues HALF-USERS-NUMBER)
-                     (setMaxValues HALF-USERS-NUMBER)))
+                     (setMinValues TEAM-NUMBER)
+                     (setMaxValues TEAM-NUMBER)))
         button-save-row (.addComponents (discord/ActionRowBuilder.)
                            (.. (discord/ButtonBuilder.)
                            (setCustomId "button-save")
@@ -262,7 +262,7 @@
         team2-score-row (.addComponents (discord/ActionRowBuilder.) team2-score)
         generated-options (clj->js (generate-score-options))]
     (go (try
-      (if (< (count users) USERS-NUMBER)
+      (if (< (count users) TEAM-NUMBER)
         (<p! (.reply interaction #js {:content "Only user data can be saved, not bots"
                                       :ephemeral true}))
         (do
