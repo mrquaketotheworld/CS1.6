@@ -66,7 +66,7 @@
   (make-context-first-column)
   (fill-text "Tag" 230 90)
   (make-context-second-column)
-  (fill-text "Navi" 326 90)
+  (fill-text "Navi" 326 90) ; TODO
 
   (make-context-first-column)
   (fill-text "Wins" 488 55)
@@ -105,11 +105,17 @@
   (make-context-second-column)
   (fill-text "5" 643 245)
   (.stroke context)
+    ; ctx.drawImage(image, 32, 31, 128, 128);
+  (font  "57px \"Military Poster\"")
+  (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
+  (fill-text "macautribes" 60 175) ; TODO DB
+  (fill-style "white")
+  (font  "43px \"Oswald\"")
+  (fill-text "#153" 32 245) ; TODO DB
 
 
 
-
-  (.writeFile fs "src/assets/stats.png" (.toBuffer canvas "image/png") (fn [err]
+  #_(.writeFile fs "src/assets/stats.png" (.toBuffer canvas "image/png") (fn [err]
                    (if err
                      (println "ERROR writeFile get" err)
                      (println "SUCCESS"))))
