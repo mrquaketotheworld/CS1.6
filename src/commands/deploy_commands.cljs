@@ -5,11 +5,12 @@
    [commands.quote :as quote]
    [commands.go :as go-command]
    [commands.make-teams :as make-teams]
-   [commands.gg :as gg]))
+   [commands.gg :as gg]
+   [commands.get :as get-command]))
 
 
 (def commands [quote/builder make-teams/builder go-command/builder])
-(def guild-commands [gg/builder])
+(def guild-commands [gg/builder get-command/builder])
 
 (def rest-api (.setToken (discord/REST. #js {:version 10}) TOKEN))
 
