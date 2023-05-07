@@ -116,7 +116,7 @@
             (.drawImage context image 32 32 128 128)
             (font "57px \"Military Poster\"")
             (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
-            (fill-text "macautribes" 60 175) ; TODO DB
+            (fill-text "macautribes" 64 174) ; TODO DB
             (<p! (.writeFile fs "src/assets/stats.png" (.toBuffer canvas "image/png")))
             (<p! (.reply interaction #js {:files #js ["src/assets/stats.png"]})))
           (catch js/Error e (do (println "ERROR on-first-image-load get" e)))))))
