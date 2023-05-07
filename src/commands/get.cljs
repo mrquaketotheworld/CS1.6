@@ -1,11 +1,12 @@
-(ns commands.get
+(ns commands.get ; TODO drop column color, add camper
   (:require [discord.js :as discord] ; TODO refactor names
             ["fs/promises" :as fs]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
             [canvas :as canvas-lib]
             [db.models.player :as player]
-            [db.models.player-server-points :as player-server-points]))
+            [db.models.player-server-points :as player-server-points]
+            [db.models.rank :as rank]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -62,8 +63,10 @@
             player-info (first (js->clj (.-rows (<p! (player/select-player user-id)))))
             player-points ((first (js->clj (.-rows (<p!
                                                      (player-server-points/select-player-by-server
-                                                       user-id server-id))))) "points")]
-        (println player-points)
+                                                       user-id server-id))))) "points")
+            rank-name ((first (js->clj (.-rows (<p! (rank/select-rank-by-points
+                                                      (.floor js/Math player-points)))))) "rank")
+            rank-color (rank-colors rank-name)]
         (fill-style "black")
         (.fillRect context 0 0 (.-width canvas) (.-height canvas))
         (global-alpha 0.22)
@@ -111,8 +114,8 @@
         (fill-text "Points" 230 209)
         (make-context-second-column)
         (fill-text player-points 326 209)
-        (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
-        (fill-text "Strawberry Legend" 230 244) ; TODO DB
+        (fill-style rank-color)
+        (fill-text (str "\"" rank-name"\"") 230 244)
 
         (make-context-first-column)
         (fill-text "NANAX Points" 489 244)
@@ -125,7 +128,7 @@
                           (.. interaction -user (displayAvatarURL #js {:extension "jpg"}))))]
           (.drawImage context image 32 32 128 128)
           (font "57px \"Military Poster\"")
-          (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
+          (fill-style rank-color)
           (fill-text username 64 174)
           (<p! (.writeFile fs "src/assets/stats.png" (.toBuffer canvas "image/png")))
           (<p! (.reply interaction #js {:files #js ["src/assets/stats.png"]}))))
