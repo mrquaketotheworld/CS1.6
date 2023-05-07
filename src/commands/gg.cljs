@@ -1,4 +1,4 @@
-(ns commands.gg ; TODO idempotent
+(ns commands.gg
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
@@ -18,6 +18,8 @@
 
 (def state (atom {:interactions {}}))
 
+(def USERS-NUMBER 10)
+(def HALF-USERS-NUMBER (/ USERS-NUMBER 2))
 (def CYAN "#18FFFF")
 (def WHITE "#FFFFFF")
 (def RED "#d00a0a")
@@ -27,14 +29,16 @@
 (defn delete-interaction-from-state [interaction-id]
   (swap! state assoc-in [:interactions interaction-id] nil))
 
+(defn correct-score-space [score]
+  (if (> (count (str score)) 1) "   " "     "))
+
 (defn create-team-embed [main-team-score opponent-teams-score main-team-usernames]
   (.. (discord/EmbedBuilder.)
-      (setTitle (str main-team-score " | " main-team-usernames))
+      (setTitle (str main-team-score (correct-score-space main-team-score) main-team-usernames))
       (setColor (cond
                   (< main-team-score opponent-teams-score) RED
                   (> main-team-score opponent-teams-score) GREEN
-                  :else WHITE
-                  ))))
+                  :else WHITE))))
 
 (defn create-map-embed [map-select]
   (.. (discord/EmbedBuilder.)
@@ -80,14 +84,13 @@
               team2-score (js/Number (match-info "team2-score"))
               team1-users (get-users (match-info "team1"))
               team2-users (get-users (match-info "team2"))
-              team1-ids (clj->js (map #(:user-id %) team1-users))
-              team2-ids (clj->js (map #(:user-id %) team2-users))
+              team1-ids (map #(:user-id %) team1-users)
+              team2-ids (map #(:user-id %) team2-users)
               users (concat team1-users team2-users)
               server-id (.-guildId interaction)
               client (<p! (.connect db/pool))]
           (go (try
             (<p! (db/begin-transaction client))
-            ; TODO validate qty players to 10
             (doseq [user users]
               (let [user-id (:user-id user)
                     username (:username user)]
@@ -129,14 +132,11 @@
                     team2-id
                     ((first (js->clj (.-rows (<p! (team/insert-generate-team-id client))))) "id")]
               (doseq [team1-player-id team1-ids]
-                (println team1-player-id team1-points-to-every-player)
                 (<p! (player-server-points/update-player-points
                        client team1-player-id server-id team1-points-to-every-player)))
               (doseq [team2-player-id team2-ids]
-                (println team2-player-id team2-points-to-every-player)
                 (<p! (player-server-points/update-player-points
                        client team2-player-id server-id team2-points-to-every-player)))
-              (println team1-id team2-id)
               (<p! (player-team-server/insert-team client
                                                    (nth team1-ids 0)
                                                    (nth team1-ids 1)
@@ -180,14 +180,14 @@
                      (.. (discord/UserSelectMenuBuilder.)
                      (setCustomId "team1")
                      (setPlaceholder "Team 1")
-                     (setMinValues 2) ; TODO change to 5 players
-                     (setMaxValues 2)))
+                     (setMinValues HALF-USERS-NUMBER)
+                     (setMaxValues HALF-USERS-NUMBER)))
         team2-row (.addComponents (discord/ActionRowBuilder.)
                      (.. (discord/UserSelectMenuBuilder.)
                      (setCustomId "team2")
                      (setPlaceholder "Team 2")
-                     (setMinValues 2)
-                     (setMaxValues 2)))
+                     (setMinValues HALF-USERS-NUMBER)
+                     (setMaxValues HALF-USERS-NUMBER)))
         button-save-row (.addComponents (discord/ActionRowBuilder.)
                            (.. (discord/ButtonBuilder.)
                            (setCustomId "button-save")
@@ -240,7 +240,7 @@
         users (reduce (fn [acc user-item]
                         (let [user-id (first user-item)
                               user (second user-item)]
-                          (if nil ; TODO nil is for test
+                          (if (.-bot user)
                             acc
                             (conj acc {:user-id user-id
                                        :username (.-username user)}))))

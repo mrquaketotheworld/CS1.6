@@ -13,6 +13,7 @@
   (.query client "BEGIN"))
 
 (defn rollback-transaction [client]
+  (println 'ROLLBACK)
   (.query client "ROLLBACK"))
 
 (defn commit-transaction [client]
