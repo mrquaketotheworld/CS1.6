@@ -20,9 +20,7 @@
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
       "go"(go-command/handle-collector-event-type-button! interaction)
-      "gg"(gg/handle-collector-event-button-save! interaction)
-      (println "OTHER"))
-    ))
+      "gg"(gg/handle-collector-event-button-save! interaction))))
 
 (defn init-collector-type-button [interaction]
   (let [channel-id (.. interaction -channel -id)]
@@ -38,10 +36,7 @@
 
 (defn handle-collector-event-select-menu! [interaction]
   (let [command-name (.. interaction -message -interaction -commandName)]
-    (case command-name
-       "gg" (gg/handle-collector-event-select-menu! interaction)
-      (println "OTHER"))
-    ))
+    (when (= command-name "gg") (gg/handle-collector-event-select-menu! interaction))))
 
 (defn init-collector-type-select-menu [interaction]
   (let [channel-id (.. interaction -channel -id)]
@@ -57,10 +52,7 @@
 
 (defn handle-collector-event-user-select! [interaction]
   (let [command-name (.. interaction -message -interaction -commandName)]
-    (case command-name
-      "gg"(gg/handle-collector-event-user-select! interaction)
-      (println "OTHER"))
-    ))
+    (when (= command-name "gg") (gg/handle-collector-event-user-select! interaction))))
 
 (defn init-collector-type-user-select [interaction]
   (let [channel-id (.. interaction -channel -id)]
@@ -87,8 +79,7 @@
             "quote" (quote/interact! interaction)
             "make-teams"(make-teams/interact! interaction)
             "go"(go-command/interact! interaction)
-            "gg"(gg/interact! interaction)
-            (println "OTHER"))))
+            "gg"(gg/interact! interaction))))
   (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
 (defn on-channel-delete [channel]
