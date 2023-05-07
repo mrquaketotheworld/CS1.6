@@ -3,8 +3,7 @@
             ["fs/promises" :as fs]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
-            [canvas :as canvas-lib]
-            [undici]))
+            [canvas :as canvas-lib]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
