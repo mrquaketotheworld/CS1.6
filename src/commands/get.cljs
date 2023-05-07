@@ -3,7 +3,8 @@
             ["fs/promises" :as fs]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
-            [canvas :as canvas-lib]))
+            [canvas :as canvas-lib]
+            [db.models.player :as player]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -53,71 +54,76 @@
 (defn on-first-image-load [interaction]
   (fn [image]
     (go (try
-      (fill-style "black")
-      (.fillRect context 0 0 (.-width canvas) (.-height canvas))
-      (global-alpha 0.22)
-      (.drawImage context image 50 0 (.-naturalWidth image) (.-naturalHeight image))
-      (global-alpha 1)
-      (font "28px Oswald")
-      (fill-style "white")
+      (let [server-id (.. interaction -guild -id)
+            user (.. interaction -user)
+            user-id (.-id user)
+            username (.-username user)]
+        (.log js/console server-id user-id username)
+        (fill-style "black")
+        (.fillRect context 0 0 (.-width canvas) (.-height canvas))
+        (global-alpha 0.22)
+        (.drawImage context image 50 0 (.-naturalWidth image) (.-naturalHeight image))
+        (global-alpha 1)
+        (font "28px Oswald")
+        (fill-style "white")
 
-      (make-context-first-column)
-      (fill-text "Country" 230 56) ; TODO fix DB
-      (make-context-second-column)
-      (fill-text "Switzerland" 326 56) ; TODO
+        (make-context-first-column)
+        (fill-text "Country" 230 56) ; TODO fix DB
+        (make-context-second-column)
+        (fill-text "Switzerland" 326 56) ; TODO
 
-      (make-context-first-column)
-      (fill-text "Tag" 230 91)
-      (make-context-second-column)
-      (fill-text "Navi" 326 91) ; TODO
+        (make-context-first-column)
+        (fill-text "Tag" 230 91)
+        (make-context-second-column)
+        (fill-text "Navi" 326 91) ; TODO
 
-      (make-context-first-column)
-      (fill-text "Wins" 489 56)
-      (make-context-second-column)
-      (fill-text "3242" 571 56) ; TODO DB
+        (make-context-first-column)
+        (fill-text "Wins" 489 56)
+        (make-context-second-column)
+        (fill-text "3242" 571 56) ; TODO DB
 
-      (make-context-first-column)
-      (fill-text "Losses" 489 91)
-      (make-context-second-column)
-      (fill-text "3242" 571 91) ; TODO DB
+        (make-context-first-column)
+        (fill-text "Losses" 489 91)
+        (make-context-second-column)
+        (fill-text "3242" 571 91) ; TODO DB
 
-      (make-context-first-column)
-      (fill-text "Draws" 489 126)
-      (make-context-second-column)
-      (fill-text "3232" 571 126) ; TODO DB
+        (make-context-first-column)
+        (fill-text "Draws" 489 126)
+        (make-context-second-column)
+        (fill-text "3232" 571 126) ; TODO DB
 
-      (make-context-first-column)
-      (fill-text "Total" 489 161) ; TODO DB
-      (make-context-second-column)
-      (fill-text "3234" 571 161) ; TODO DB
+        (make-context-first-column)
+        (fill-text "Total" 489 161) ; TODO DB
+        (make-context-second-column)
+        (fill-text "3234" 571 161) ; TODO DB
 
-      (make-context-first-column)
-      (fill-text "Win Rate" 489 209)
-      (make-context-second-column)
-      (fill-text "53%" 596 209) ; TODO DB
+        (make-context-first-column)
+        (fill-text "Win Rate" 489 209)
+        (make-context-second-column)
+        (fill-text "53%" 596 209) ; TODO DB
 
-      (make-context-first-column)
-      (fill-text "Points" 230 209)
-      (make-context-second-column)
-      (fill-text "3232" 326 209) ; TODO DB
-      (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
-      (fill-text "Strawberry Legend" 230 244) ; TODO DB
-
-      (make-context-first-column)
-      (fill-text "NANAX Points" 489 244)
-      (make-context-second-column)
-      (fill-text "5" 644 244)
-      (fill-style "white")
-      (font "43px \"Oswald\"")
-      (fill-text "#153" 32 244) ; TODO DB
-      (let [image (<p! (canvas-lib/loadImage
-                        (.. interaction -user (displayAvatarURL #js {:extension "jpg"}))))]
-        (.drawImage context image 32 32 128 128)
-        (font "57px \"Military Poster\"")
+        (make-context-first-column)
+        (fill-text "Points" 230 209)
+        (make-context-second-column)
+        (fill-text "3232" 326 209) ; TODO DB
         (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
-        (fill-text "macautribes" 64 174) ; TODO DB
-        (<p! (.writeFile fs "src/assets/stats.png" (.toBuffer canvas "image/png")))
-        (<p! (.reply interaction #js {:files #js ["src/assets/stats.png"]})))
+        (fill-text "Strawberry Legend" 230 244) ; TODO DB
+
+        (make-context-first-column)
+        (fill-text "NANAX Points" 489 244)
+        (make-context-second-column)
+        (fill-text "5" 644 244)
+        (fill-style "white")
+        (font "43px \"Oswald\"")
+        (fill-text "#153" 32 244) ; TODO DB
+        (let [image (<p! (canvas-lib/loadImage
+                          (.. interaction -user (displayAvatarURL #js {:extension "jpg"}))))]
+          (.drawImage context image 32 32 128 128)
+          (font "57px \"Military Poster\"")
+          (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
+          (fill-text "macautribes" 64 174) ; TODO DB
+          (<p! (.writeFile fs "src/assets/stats.png" (.toBuffer canvas "image/png")))
+          (<p! (.reply interaction #js {:files #js ["src/assets/stats.png"]}))))
       (catch js/Error e (do (println "ERROR on-first-image-load get" e)))))))
 
 
