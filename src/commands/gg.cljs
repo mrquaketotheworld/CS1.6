@@ -101,15 +101,11 @@
                   (when (empty? player-server)
                     (<p! (player-server-points/insert-player client user-id server-id))))))
             (let [team1-points
-                    (js->clj
-                      (.-rows
-                       (<p! (player-server-points/select-players-points
-                            client (clj->js team1-ids) server-id))))
+                    (db-utils/get-formatted-rows (<p! (player-server-points/select-players-points
+                             client (clj->js team1-ids) server-id)))
                   team2-points
-                    (js->clj
-                      (.-rows
-                       (<p! (player-server-points/select-players-points
-                            client (clj->js team2-ids) server-id))))
+                    (db-utils/get-formatted-rows (<p! (player-server-points/select-players-points
+                             client (clj->js team2-ids) server-id)))
                     team1-total-points (sum-players-points team1-points)
                     team2-total-points (sum-players-points team2-points)
                     elo-K-factor 160
@@ -302,7 +298,8 @@
                          (setCustomId "map-select")
                          (setPlaceholder "Map"))
           map-select-row (.addComponents (discord/ActionRowBuilder.) map-select)
-          generated-options-maps (clj->js (generate-maps-options (js->clj (.-rows result))))
+          generated-options-maps (clj->js (generate-maps-options
+                                            (db-utils/get-formatted-rows result)))
           embed-title (.. (discord/EmbedBuilder.)
                           (setTitle "What map did you play?")
                           (setColor CYAN))]
