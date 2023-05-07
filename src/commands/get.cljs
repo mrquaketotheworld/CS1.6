@@ -4,7 +4,8 @@
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
             [canvas :as canvas-lib]
-            [db.models.player :as player]))
+            [db.models.player :as player]
+            [db.models.player-server-points :as player-server-points]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -57,8 +58,12 @@
       (let [server-id (.. interaction -guild -id)
             user (.. interaction -user)
             user-id (.-id user)
-            username (.-username user)
-            player-info (first (js->clj (.-rows (<p! (player/select-player user-id)))))]
+            username (.-username user) ; TODO refactor first js->clj
+            player-info (first (js->clj (.-rows (<p! (player/select-player user-id)))))
+            player-points ((first (js->clj (.-rows (<p!
+                                                     (player-server-points/select-player-by-server
+                                                       user-id server-id))))) "points")]
+        (println player-points)
         (fill-style "black")
         (.fillRect context 0 0 (.-width canvas) (.-height canvas))
         (global-alpha 0.22)
@@ -105,7 +110,7 @@
         (make-context-first-column)
         (fill-text "Points" 230 209)
         (make-context-second-column)
-        (fill-text "3232" 326 209) ; TODO DB
+        (fill-text player-points 326 209)
         (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
         (fill-text "Strawberry Legend" 230 244) ; TODO DB
 

@@ -1,9 +1,12 @@
-(ns db.models.player-server-points)
+(ns db.models.player-server-points
+  (:require [db.connection :as db]))
 
-(defn select-player-by-server [client player-id server_id]
+(defn select-player-by-server
+  ([player-id server_id] (select-player-by-server db/pool player-id server_id))
+  ([client player-id server_id]
   (.query client
-  "SELECT player_id FROM player_server_points WHERE player_id = $1 AND server_id = $2"
-    #js [player-id server_id]))
+  "SELECT player_id, points FROM player_server_points WHERE player_id = $1 AND server_id = $2"
+    #js [player-id server_id])))
 
 (defn select-players-points [client players-ids server_id]
   (.query client
