@@ -275,10 +275,12 @@
                     team2-match-info (match-info "team2")
                     team1-users-set (set (map #(:user-id %) team1-match-info))
                     team2-users-set (set (map #(:user-id %) team2-match-info))]
-                ;TODO add validation
-                (println (= (count (clojure.set/intersection team1-users-set team2-users-set)) 0))
-                (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team2]
-                                              :components #js [team2-score-row]})))
+                (if (= (count (clojure.set/intersection team1-users-set team2-users-set)) 0)
+                 (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team2]
+                                              :components #js [team2-score-row]}))
+                  (<p! (.reply interaction #js {
+                                    :content "One player cannot play on two teams at the same time"
+                                    :ephemeral true}))))
             "team1"
               (<p! (.update interaction #js { :embeds #js [embed-title-what-score-team1]
                                              :components #js [team1-score-row]})))))
