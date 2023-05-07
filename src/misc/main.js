@@ -51,29 +51,29 @@ loadImage('nanax_logo.png').then((image) => {
   ctx.fillText('Navi', 326, 90)
 
   makeContextFirstColumn();
-  ctx.fillText('Wins', 490, 55)
+  ctx.fillText('Wins', 488, 55)
   makeContextSecondColumn();
-  ctx.fillText('134534', 572, 55)
+  ctx.fillText('134534', 570, 55)
 
   makeContextFirstColumn();
-  ctx.fillText('Losses', 490, 90)
+  ctx.fillText('Losses', 488, 90)
   makeContextSecondColumn();
-  ctx.fillText('345', 572, 90)
+  ctx.fillText('345', 570, 90)
 
   makeContextFirstColumn();
-  ctx.fillText('Draws', 490, 125)
+  ctx.fillText('Draws', 488, 125)
   makeContextSecondColumn();
-  ctx.fillText('345', 572, 125)
+  ctx.fillText('345', 570, 125)
 
   makeContextFirstColumn();
-  ctx.fillText('Total', 490, 160)
+  ctx.fillText('Total', 488, 160)
   makeContextSecondColumn();
-  ctx.fillText('345343', 572, 160)
+  ctx.fillText('345343', 570, 160)
 
   makeContextFirstColumn();
-  ctx.fillText('Win Rate', 490, 210)
+  ctx.fillText('Win Rate', 488, 210)
   makeContextSecondColumn();
-  ctx.fillText('58%', 597, 210)
+  ctx.fillText('58%', 595, 210)
 
   makeContextFirstColumn();
   ctx.fillText('Points', 230, 245)
@@ -83,9 +83,9 @@ loadImage('nanax_logo.png').then((image) => {
   ctx.fillText('Strawberry Legend', 230, 210)
 
   makeContextFirstColumn();
-  ctx.fillText('NANAX Points', 490, 245)
+  ctx.fillText('NANAX Points', 488, 245)
   makeContextSecondColumn();
-  ctx.fillText('6', 645, 245)
+  ctx.fillText('6', 643, 245)
   ctx.stroke();
 
 }).then(() => {
