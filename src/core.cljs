@@ -82,12 +82,17 @@
             "gg"(gg/interact! interaction))))
   (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
-(defn on-channel-delete [channel]
-  (swap! state update-in [:button-collectors] ; TODO add other collectors
+(defn delete-collectors [collectors-type channel]
+  (swap! state update-in [collectors-type]
          (fn [old-collectors]
            (let [channel-id (.-id channel)]
            (.stop (old-collectors channel-id))
            (dissoc old-collectors channel-id)))))
+
+(defn on-channel-delete [channel]
+  (delete-collectors :button-collectors channel)
+  (delete-collectors :select-menu-collectors channel)
+  (delete-collectors :user-select-collectors channel))
 
 (.on client "ready" #(println "Ready!" (js/Date.)))
 (.on client "interactionCreate" handle-interaction)
