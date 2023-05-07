@@ -8,6 +8,7 @@
             [commands.go :as go-command]
             [commands.deploy-commands :as deploy]
             [commands.gg :as gg]
+            [commands.get :as get-command]
             [db.models.server :as server]))
 
 (def client (discord/Client.
@@ -85,7 +86,8 @@
                      (<p!
                        (.reply interaction #js
                                {:content "Sorry, you do not have permissions to use this command"
-                                :ephemeral true})))))))
+                                :ephemeral true}))))
+            "get" (get-command/interact! interaction))))
   (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
 (defn delete-collectors [collectors-type channel]
