@@ -104,9 +104,10 @@
 (.login client TOKEN)
 
 (defn main [& args]
-  (when (= (nth args 0) "register")
-    (println "Register commands")
-    (deploy/register-commands)))
+  (case (nth args 0)
+    "register" (deploy/register-commands)
+    "register-guild" (deploy/register-guild-commands)
+    (println "Start")))
 
  (.on js/process "unhandledRejection"
       (fn [e] (println (js/Date.) "unhandledRejection" e)))

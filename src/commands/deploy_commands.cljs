@@ -8,7 +8,8 @@
    [commands.gg :as gg]))
 
 
-(def commands [quote/builder make-teams/builder go-command/builder gg/builder])
+(def commands [quote/builder make-teams/builder go-command/builder])
+(def guild-commands [gg/builder])
 
 (def rest-api (.setToken (discord/REST. #js {:version 10}) TOKEN))
 
@@ -18,3 +19,9 @@
       (then #(println "Register commands SUCCESS!"))
       (catch #(println "ERROR register-commands deploy_commands" %))))
 
+(defn register-guild-commands []
+  (.. rest-api
+      (put (.applicationGuildCommands discord/Routes CLIENT_ID 1008416729065607179)
+           #js {:body (clj->js guild-commands)})
+      (then #(println "Register guild commands SUCCESS!"))
+      (catch #(println "ERROR register-guild-commands deploy_commands" %))))
