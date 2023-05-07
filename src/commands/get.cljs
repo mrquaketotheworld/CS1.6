@@ -92,24 +92,24 @@
     (fill-text "3234" 570 161) ; TODO DB
 
     (make-context-first-column)
-    (fill-text "Win Rate" 488 210)
+    (fill-text "Win Rate" 488 209)
     (make-context-second-column)
-    (fill-text "53%" 595 210) ; TODO DB
+    (fill-text "53%" 595 209) ; TODO DB
 
     (make-context-first-column)
-    (fill-text "Points" 230 210)
+    (fill-text "Points" 230 209)
     (make-context-second-column)
-    (fill-text "3232" 326 210) ; TODO DB
+    (fill-text "3232" 326 209) ; TODO DB
     (fill-style (rank-colors "Strawberry Legend")) ; TODO DB
-    (fill-text "Strawberry Legend" 230 245) ; TODO DB
+    (fill-text "Strawberry Legend" 230 244) ; TODO DB
 
     (make-context-first-column)
-    (fill-text "NANAX Points" 488 245)
+    (fill-text "NANAX Points" 488 244)
     (make-context-second-column)
-    (fill-text "5" 643 245)
+    (fill-text "5" 643 244)
     (fill-style "white")
     (font "43px \"Oswald\"")
-    (fill-text "#153" 32 245) ; TODO DB
+    (fill-text "#153" 32 244) ; TODO DB
     (go (try
           (let [image (<p! (canvas-lib/loadImage
                             (.. interaction -user (displayAvatarURL #js {:extension "jpg"}))))]
