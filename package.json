@@ -10,7 +10,8 @@
     "multi-elo": "2.2.0",
     "node-canvas": "2.9.0",
     "pg": "8.10.0",
-    "simple-elo-rating": "1.0.0"
+    "simple-elo-rating": "1.0.0",
+    "undici": "5.22.0"
   },
   "devDependencies": {
     "shadow-cljs": "2.23.1"
