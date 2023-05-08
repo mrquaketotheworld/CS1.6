@@ -67,7 +67,7 @@
                (setValue (% "map"))) maps))
 
 (defn calculate-points-for-one-player [team-points-elo-diff players]
-  (js/Number (.toFixed (/ team-points-elo-diff (count players)) 2)))
+  (/ team-points-elo-diff (count players)))
 
 (defn create-user-list-string [team-info]
   (apply str (interpose ", " (map #(:username %) team-info))))

@@ -141,7 +141,7 @@
             (make-context-first-column)
             (fill-text "Points" 230 209)
             (make-context-second-column)
-            (fill-text player-points 326 209)
+            (fill-text (.toFixed player-points 2) 326 209)
             (fill-style rank-color)
             (fill-text (str "\"" rank-name"\"") 230 244)
 
