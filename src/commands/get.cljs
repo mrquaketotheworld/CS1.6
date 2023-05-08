@@ -1,5 +1,5 @@
-(ns commands.get ; TODO drop column color, add camper, move right column left -1px
-  (:require [discord.js :as discord] ; TODO refactor names
+(ns commands.get
+  (:require [discord.js :as discord]
             ["fs/promises" :as fs]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
@@ -95,29 +95,29 @@
         (fill-text (player-info "tag") 326 91)
 
         (make-context-first-column)
-        (fill-text "Wins" 489 56)
+        (fill-text "Wins" 488 56)
         (make-context-second-column)
-        (fill-text "3242" 571 56) ; TODO DB
+        (fill-text "3242" 570 56) ; TODO DB
 
         (make-context-first-column)
-        (fill-text "Losses" 489 91)
+        (fill-text "Losses" 488 91)
         (make-context-second-column)
-        (fill-text "3242" 571 91) ; TODO DB
+        (fill-text "3242" 570 91) ; TODO DB
 
         (make-context-first-column)
-        (fill-text "Draws" 489 126)
+        (fill-text "Draws" 488 126)
         (make-context-second-column)
-        (fill-text "3232" 571 126) ; TODO DB
+        (fill-text "3232" 570 126) ; TODO DB
 
         (make-context-first-column)
-        (fill-text "Total" 489 161) ; TODO DB
+        (fill-text "Total" 488 161) ; TODO DB
         (make-context-second-column)
-        (fill-text "3234" 571 161) ; TODO DB
+        (fill-text "3234" 570 161) ; TODO DB
 
         (make-context-first-column)
-        (fill-text "Win Rate" 489 209)
+        (fill-text "Win Rate" 488 209)
         (make-context-second-column)
-        (fill-text "53%" 596 209) ; TODO DB
+        (fill-text "53%" 595 209) ; TODO DB
 
         (make-context-first-column)
         (fill-text "Points" 230 209)
@@ -127,9 +127,9 @@
         (fill-text (str "\"" rank-name"\"") 230 244)
 
         (make-context-first-column)
-        (fill-text "NANAX Points" 489 244)
+        (fill-text "NANAX Points" 488 244)
         (make-context-second-column)
-        (fill-text (player-info "nanax_points") 644 244)
+        (fill-text (player-info "nanax_points") 643 244)
         (fill-style "white")
         (font "43px \"Oswald\"")
         (fill-text (str "#" player-rating) 32 244)
