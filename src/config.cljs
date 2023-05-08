@@ -10,3 +10,4 @@
 (def PG_DATABASE (config "PG_DATABASE"))
 (def PG_PASSWORD (config "PG_PASSWORD"))
 (def PG_PORT (config "PG_PORT"))
+(def GUILD (config "GUILD"))

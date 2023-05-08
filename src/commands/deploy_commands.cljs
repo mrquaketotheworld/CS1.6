@@ -1,6 +1,6 @@
 (ns commands.deploy-commands
   (:require
-   [config :refer [TOKEN CLIENT_ID]]
+   [config :refer [TOKEN CLIENT_ID GUILD]]
    ["discord.js" :as discord]
    [commands.quote :as quote]
    [commands.go :as go-command]
@@ -22,7 +22,7 @@
 
 (defn register-guild-commands []
   (.. rest-api ; TODO change guildId
-      (put (.applicationGuildCommands discord/Routes CLIENT_ID "1008416729065607179")
+      (put (.applicationGuildCommands discord/Routes CLIENT_ID GUILD)
            #js {:body (clj->js guild-commands)})
       (then #(println "Register guild commands SUCCESS!"))
       (catch #(println "ERROR register-guild-commands deploy_commands" %))))
