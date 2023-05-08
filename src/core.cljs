@@ -9,7 +9,8 @@
             [commands.deploy-commands :as deploy]
             [commands.gg :as gg]
             [commands.get :as get-command]
-            [db.models.server :as server]))
+            [db.models.server :as server]
+            [db.create-tables :as create-tables]))
 
 (def client (discord/Client.
                  #js {:intents #js [(.-Guilds discord/GatewayIntentBits)
@@ -111,6 +112,7 @@
   (case (nth args 0)
     "register" (deploy/register-commands)
     "register-guild" (deploy/register-guild-commands)
+    "create-tables" (create-tables/create-tables)
     (println "Start")))
 
  (.on js/process "unhandledRejection"
