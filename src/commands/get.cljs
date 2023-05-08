@@ -62,7 +62,7 @@
   (fn [image]
     (go (try
       (let [server-id (.. interaction -guild -id)
-            user (.. interaction -user)
+            user (or (.. interaction -options (getUser "user")) (.. interaction -user))
             user-id (.-id user)
             username (.-username user) ; TODO refactor first js->clj
             player-info (db-utils/get-first-formatted-row (<p! (player/select-player user-id)))
@@ -74,7 +74,6 @@
             rank-color (rank-colors rank-name)
             team-ids (db-utils/get-formatted-rows
                        (<p! (player-team-server/select-team-ids user-id server-id)))]
-        (println user-id server-id)
         (fill-style "black")
         (.fillRect context 0 0 (.-width canvas) (.-height canvas))
         (global-alpha 0.22)
