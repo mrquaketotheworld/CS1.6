@@ -1,5 +1,5 @@
 (ns commands.get
-  (:require [discord.js :as discord]
+  (:require ["discord.js" :as discord]
             ["fs/promises" :as fs]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
@@ -8,6 +8,7 @@
             [db.models.player-server-points :as player-server-points]
             [db.models.rank :as rank]
             [db.models.player-team-server :as player-team-server]
+            [db.models.match :as match]
             [shared.db-utils :as db-utils]
             [shared.constants :refer
               [DARK-GREY GREY TOXIC GREEN ORANGE BLUE LIGHT-BLUE CYAN YELLOW PURPLE RED]]))
@@ -72,10 +73,27 @@
             rank-name ((db-utils/get-first-formatted-row (<p! (rank/select-rank-by-points
                                                           (.floor js/Math player-points)))) "rank")
             rank-color (rank-colors rank-name)
-            team-ids (db-utils/get-formatted-rows
+            team-ids-bulk (db-utils/get-formatted-rows
                        (<p! (player-team-server/select-team-ids user-id server-id)))
+            team-ids (clj->js (map #(% "team_id") team-ids-bulk))
             player-rating ((db-utils/get-first-formatted-row
-               (<p! (player-server-points/select-player-rating user-id server-id))) "dense_rank")]
+               (<p! (player-server-points/select-player-rating user-id server-id))) "dense_rank")
+            player-team1-wins ((db-utils/get-first-formatted-row
+                                 (<p! (match/select-team1-wins team-ids))) "count")
+            player-team1-losses ((db-utils/get-first-formatted-row
+                                   (<p! (match/select-team1-losses team-ids))) "count")
+            player-team1-draws ((db-utils/get-first-formatted-row
+                                  (<p! (match/select-team1-draws team-ids))) "count")
+
+            player-team2-wins ((db-utils/get-first-formatted-row
+                                 (<p! (match/select-team2-wins team-ids))) "count")
+            player-team2-losses ((db-utils/get-first-formatted-row
+                                   (<p! (match/select-team2-losses team-ids))) "count")
+            player-team2-draws ((db-utils/get-first-formatted-row
+                                  (<p! (match/select-team2-draws team-ids))) "count")
+            ]
+        (println 'W-L-D player-team1-wins player-team1-losses player-team1-draws)
+        (println 'W-L-D player-team2-wins player-team2-losses player-team2-draws)
         (fill-style "black")
         (.fillRect context 0 0 (.-width canvas) (.-height canvas))
         (global-alpha 0.22)
