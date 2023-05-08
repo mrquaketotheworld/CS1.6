@@ -7,26 +7,32 @@
                 ) #js [map-name team1-score team2-score team1-id team2-id]))
 
 (defn select-team1-wins [team-ids]
-  (.query db/pool "SELECT * FROM match WHERE team1 = ANY ($1) AND team1_score > team2_score"
+  (.query db/pool
+          "SELECT COUNT (*) FROM match WHERE team1 = ANY ($1) AND team1_score > team2_score"
     #js [team-ids]))
 
 (defn select-team1-losses [team-ids]
-  (.query db/pool "SELECT * FROM match WHERE team1 = ANY ($1) AND team1_score < team2_score"
+  (.query db/pool
+          "SELECT COUNT (*) FROM match WHERE team1 = ANY ($1) AND team1_score < team2_score"
     #js [team-ids]))
 
 (defn select-team1-draws [team-ids]
-  (.query db/pool "SELECT * FROM match WHERE team1 = ANY ($1) AND team1_score = team2_score"
+  (.query db/pool
+          "SELECT COUNT (*) FROM match WHERE team1 = ANY ($1) AND team1_score = team2_score"
     #js [team-ids]))
 
 (defn select-team2-wins [team-ids]
-  (.query db/pool "SELECT * FROM match WHERE team2 = ANY ($1) AND team1_score < team2_score"
+  (.query db/pool
+          "SELECT COUNT (*) FROM match WHERE team2 = ANY ($1) AND team1_score < team2_score"
     #js [team-ids]))
 
 (defn select-team2-losses [team-ids]
-  (.query db/pool "SELECT * FROM match WHERE team2 = ANY ($1) AND team1_score > team2_score"
+  (.query db/pool
+          "SELECT COUNT (*) FROM match WHERE team2 = ANY ($1) AND team1_score > team2_score"
     #js [team-ids]))
 
 (defn select-team2-draws [team-ids]
-  (.query db/pool "SELECT * FROM match WHERE team2 = ANY ($1) AND team1_score = team2_score"
+  (.query db/pool
+          "SELECT COUNT (*) FROM match WHERE team2 = ANY ($1) AND team1_score = team2_score"
     #js [team-ids]))
 
