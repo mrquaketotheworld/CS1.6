@@ -7,6 +7,7 @@
             [db.models.player :as player]
             [db.models.player-server-points :as player-server-points]
             [db.models.rank :as rank]
+            [db.models.player-team-server :as player-team-server]
             [utils.db-utils :as db-utils]))
 
 (def builder
@@ -67,7 +68,10 @@
                                   user-id server-id))) "points")
             rank-name ((db-utils/get-first-formatted-row (<p! (rank/select-rank-by-points
                                                           (.floor js/Math player-points)))) "rank")
-            rank-color (rank-colors rank-name)]
+            rank-color (rank-colors rank-name)
+            team-ids (db-utils/get-formatted-rows
+                       (<p! (player-team-server/select-team-ids user-id server-id)))]
+        (println user-id server-id)
         (fill-style "black")
         (.fillRect context 0 0 (.-width canvas) (.-height canvas))
         (global-alpha 0.22)
