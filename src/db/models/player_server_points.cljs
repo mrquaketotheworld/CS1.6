@@ -13,6 +13,12 @@
  "SELECT player_id, points FROM player_server_points WHERE player_id = ANY ($1) AND server_id = $2"
     #js [players-ids server_id]))
 
+(defn select-player-rating [player-id server-id]
+  (.query db/pool
+   "SELECT * FROM (SELECT *, DENSE_RANK () OVER (ORDER BY points DESC)
+                  FROM player_server_points WHERE server_id = $1) AS sub WHERE sub.player_id = $2"
+    #js [player-id server-id]))
+
 (defn insert-player [client player-id server_id]
   (.query client
   "INSERT INTO player_server_points (player_id, server_id) VALUES ($1, $2)"
