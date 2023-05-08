@@ -19,13 +19,13 @@
       (setName "gg")
       (setDescription "Save the match result!")))
 
-(def state (atom {:interactions {}}))
+(def state (atom {:pendings {} :interactions {}}))
 
 (def TEAM-NUMBER 5)
 (def MINUTES-3 180000)
 
 (defn delete-interaction-from-state [interaction-id]
-  (swap! state assoc-in [:interactions interaction-id] nil))
+  (swap! state update-in [:interactions] dissoc interaction-id))
 
 (defn correct-score-space [score]
   (if (> (count (str score)) 1) "   " "     "))
@@ -200,7 +200,8 @@
           (<p! (.update interaction #js {:embeds #js [embed-title-who-team2]
                                          :components #js [team2-row]}))
         "team2-score"
-          (let [match-info (get-match-info interaction-id)
+          (let [user-id (.. interaction -user -id)
+                match-info (get-match-info interaction-id)
                 map-select (match-info "map-select")
                 team1-score (js/Number (match-info "team1-score"))
                 team2-score (js/Number (match-info "team2-score"))
@@ -217,6 +218,7 @@
                 finish-message-map (create-map-embed map-select)
                 finish-message-team1 (create-team-embed team1-score team2-score team1-usernames)
                 finish-message-team2 (create-team-embed team2-score team1-score team2-usernames)]
+            (swap! state update-in [:pendings] assoc user-id interaction-id)
             (<p! (.update interaction #js {:content finish-message
                                            :embeds #js [finish-message-map
                                                         finish-message-team1
@@ -264,7 +266,7 @@
           (swap! state update-in [:interactions interaction-id] #(assoc % custom-id users))
           (case custom-id
             "team2"
-              (let [match-info (get-in @state [:interactions interaction-id])
+              (let [match-info (get-match-info interaction-id)
                     team1-match-info (match-info "team1")
                     team2-match-info (match-info "team2")
                     team1-users-set (set (map #(:user-id %) team1-match-info))
@@ -284,6 +286,11 @@
    ; FIXME unable use go <p! because of strange compilation errors
   (.catch (.then (map-server/select-maps (.-guildId interaction) "main")
     (fn [result]
+      (let [user-id (.. interaction -user -id)
+            pending-interaction (get-in @state [:pendings user-id])]
+        (when pending-interaction
+          (delete-interaction-from-state pending-interaction)
+          (swap! state update-in [:pendings] dissoc user-id)))
       (js/setTimeout (fn []
         (let [interaction-id (.-id interaction)
               match-info (get-match-info interaction-id)]
