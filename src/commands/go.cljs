@@ -217,30 +217,27 @@
         interaction-id (.-id interaction)]
     (println "/go INTERACTION" (js/Date.))
     (go (try
-          (let [server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))]
-              (when (empty? server-with-maps)
-                (<p! (map-server/insert-default-maps server-id)))
-            (let [maps
-                  (format-maps (db-utils/get-formatted-rows
-                                 (<p! (map-server/select-maps server-id option))))]
-              (if (.. interaction -member -voice -channel)
-                (do
-                  (js/setTimeout #(go (try
-                                      (disable-buttons interaction-id)
-                                      (<p! (.editReply interaction (create-reply interaction-id)))
-                                      (js/setTimeout
-                                        (fn [] (swap! state update-in [:interactions]
-                                                      (fn [old-state]
-                                                        (dissoc old-state interaction-id)))) 5000)
-                                      (catch js/Error e (println ERROR-MESSAGE-INTERACT e)))) 60000)
-                  (init-interaction! interaction maps)
-                  (<p! (.reply interaction (create-reply interaction-id)))
-                  (let [users-in-voice (get-users-in-voice interaction)
-                        channel-id (.. interaction -channel -id)]
-                    (<p! (.followUp interaction users-in-voice))))
-                  (<p! (.reply
-                         interaction #js {:content (str "You need to be in a voice "
-                                                        "channel to run map poll, "
-                                                        (.. interaction -member -user -username))
-                                          :ephemeral true})))))
+          (let [maps
+                (format-maps (db-utils/get-formatted-rows
+                               (<p! (map-server/select-maps server-id option))))]
+            (if (.. interaction -member -voice -channel)
+              (do
+                (js/setTimeout #(go (try
+                                    (disable-buttons interaction-id)
+                                    (<p! (.editReply interaction (create-reply interaction-id)))
+                                    (js/setTimeout
+                                      (fn [] (swap! state update-in [:interactions]
+                                                    (fn [old-state]
+                                                      (dissoc old-state interaction-id)))) 5000)
+                                    (catch js/Error e (println ERROR-MESSAGE-INTERACT e)))) 60000)
+                (init-interaction! interaction maps)
+                (<p! (.reply interaction (create-reply interaction-id)))
+                (let [users-in-voice (get-users-in-voice interaction)
+                      channel-id (.. interaction -channel -id)]
+                  (<p! (.followUp interaction users-in-voice))))
+                (<p! (.reply
+                       interaction #js {:content (str "You need to be in a voice "
+                                                      "channel to run map poll, "
+                                                      (.. interaction -member -user -username))
+                                        :ephemeral true}))))
           (catch js/Error e (println ERROR-MESSAGE-INTERACT e))))))

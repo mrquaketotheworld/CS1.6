@@ -10,7 +10,8 @@
             [commands.gg :as gg]
             [commands.get :as get-command]
             [db.models.server :as server]
-            [db.init-tables :as init-tables]))
+            [db.init-tables :as init-tables]
+            [db.models.map-server :as map-server]))
 
 (def client (discord/Client.
                  #js {:intents #js [(.-Guilds discord/GatewayIntentBits)
@@ -71,11 +72,14 @@
 (defn handle-interaction [interaction]
   (go (try
         (let [server-id (.. interaction -guild -id)
-              server-name (.. interaction -guild -name)]
+              server-name (.. interaction -guild -name)
+              server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))]
         (init-collector-type-button interaction)
         (init-collector-type-select-menu interaction)
         (init-collector-type-user-select interaction)
         (<p! (server/insert-server-if-not-exists server-id server-name))
+        (when (empty? server-with-maps)
+          (<p! (map-server/insert-default-maps server-id)))
         (when (.isChatInputCommand interaction)
           (case (.-commandName interaction)
             "quote" (quote/interact! interaction)
