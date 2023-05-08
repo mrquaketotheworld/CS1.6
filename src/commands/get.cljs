@@ -62,103 +62,108 @@
 (defn on-first-image-load [interaction]
   (fn [image]
     (go (try
-      (let [server-id (.. interaction -guild -id)
-            user (or (.. interaction -options (getUser "user")) (.. interaction -user))
+      (let [user (or (.. interaction -options (getUser "user")) (.. interaction -user))
             user-id (.-id user)
-            username (.-username user) ; TODO refactor first js->clj
-            player-info (db-utils/get-first-formatted-row (<p! (player/select-player user-id)))
-            player-points ((db-utils/get-first-formatted-row
-                            (<p! (player-server-points/select-player-by-server
-                                  user-id server-id))) "points")
-            rank-name ((db-utils/get-first-formatted-row (<p! (rank/select-rank-by-points
-                                                          (.floor js/Math player-points)))) "rank")
-            rank-color (rank-colors rank-name)
-            team-ids-bulk (db-utils/get-formatted-rows
-                       (<p! (player-team-server/select-team-ids user-id server-id)))
-            team-ids (clj->js (map #(% "team_id") team-ids-bulk))
-            player-rating ((db-utils/get-first-formatted-row
-               (<p! (player-server-points/select-player-rating user-id server-id))) "dense_rank")
-            player-team1-wins ((db-utils/get-first-formatted-row
-                                 (<p! (match/select-team1-wins team-ids))) "count")
-            player-team1-losses ((db-utils/get-first-formatted-row
-                                   (<p! (match/select-team1-losses team-ids))) "count")
-            player-team1-draws ((db-utils/get-first-formatted-row
-                                  (<p! (match/select-team1-draws team-ids))) "count")
+            username (.-username user)
+            player-info (db-utils/get-first-formatted-row (<p! (player/select-player user-id)))]
+        (if player-info
+          (let [server-id (.. interaction -guild -id)
+                player-points ((db-utils/get-first-formatted-row
+                                (<p! (player-server-points/select-player-by-server
+                                      user-id server-id))) "points")
+                rank-name ((db-utils/get-first-formatted-row (<p! (rank/select-rank-by-points
+                                                              (.floor js/Math player-points)))) "rank")
+                rank-color (rank-colors rank-name)
+                team-ids-bulk (db-utils/get-formatted-rows
+                           (<p! (player-team-server/select-team-ids user-id server-id)))
+                team-ids (clj->js (map #(% "team_id") team-ids-bulk))
+                player-rating ((db-utils/get-first-formatted-row
+                   (<p! (player-server-points/select-player-rating user-id server-id))) "dense_rank")
+                player-team1-wins ((db-utils/get-first-formatted-row
+                                     (<p! (match/select-team1-wins team-ids))) "count")
+                player-team1-losses ((db-utils/get-first-formatted-row
+                                       (<p! (match/select-team1-losses team-ids))) "count")
+                player-team1-draws ((db-utils/get-first-formatted-row
+                                      (<p! (match/select-team1-draws team-ids))) "count")
 
-            player-team2-wins ((db-utils/get-first-formatted-row
-                                 (<p! (match/select-team2-wins team-ids))) "count")
-            player-team2-losses ((db-utils/get-first-formatted-row
-                                   (<p! (match/select-team2-losses team-ids))) "count")
-            player-team2-draws ((db-utils/get-first-formatted-row
-                                  (<p! (match/select-team2-draws team-ids))) "count")
-            ]
-        (println 'W-L-D player-team1-wins player-team1-losses player-team1-draws)
-        (println 'W-L-D player-team2-wins player-team2-losses player-team2-draws)
-        (fill-style "black")
-        (.fillRect context 0 0 (.-width canvas) (.-height canvas))
-        (global-alpha 0.22)
-        (.drawImage context image 50 0 (.-naturalWidth image) (.-naturalHeight image))
-        (global-alpha 1)
-        (font "28px Oswald")
-        (fill-style "white")
+                player-team2-wins ((db-utils/get-first-formatted-row
+                                     (<p! (match/select-team2-wins team-ids))) "count")
+                player-team2-losses ((db-utils/get-first-formatted-row
+                                       (<p! (match/select-team2-losses team-ids))) "count")
+                player-team2-draws ((db-utils/get-first-formatted-row
+                                      (<p! (match/select-team2-draws team-ids))) "count")
+                ]
+            (println 'W-L-D player-team1-wins player-team1-losses player-team1-draws)
+            (println 'W-L-D player-team2-wins player-team2-losses player-team2-draws)
+            (fill-style "black")
+            (.fillRect context 0 0 (.-width canvas) (.-height canvas))
+            (global-alpha 0.22)
+            (.drawImage context image 50 0 (.-naturalWidth image) (.-naturalHeight image))
+            (global-alpha 1)
+            (font "28px Oswald")
+            (fill-style "white")
 
-        (make-context-first-column)
-        (fill-text "Country" 230 56)
-        (make-context-second-column)
-        (fill-text (player-info "country") 326 56)
+            (make-context-first-column)
+            (fill-text "Country" 230 56)
+            (make-context-second-column)
+            (fill-text (player-info "country") 326 56)
 
-        (make-context-first-column)
-        (fill-text "Tag" 230 91)
-        (make-context-second-column)
-        (fill-text (player-info "tag") 326 91)
+            (make-context-first-column)
+            (fill-text "Tag" 230 91)
+            (make-context-second-column)
+            (fill-text (player-info "tag") 326 91)
 
-        (make-context-first-column)
-        (fill-text "Wins" 488 56)
-        (make-context-second-column)
-        (fill-text "3242" 570 56) ; TODO DB
+            (make-context-first-column)
+            (fill-text "Wins" 488 56)
+            (make-context-second-column)
+            (fill-text "3242" 570 56) ; TODO DB
 
-        (make-context-first-column)
-        (fill-text "Losses" 488 91)
-        (make-context-second-column)
-        (fill-text "3242" 570 91) ; TODO DB
+            (make-context-first-column)
+            (fill-text "Losses" 488 91)
+            (make-context-second-column)
+            (fill-text "3242" 570 91) ; TODO DB
 
-        (make-context-first-column)
-        (fill-text "Draws" 488 126)
-        (make-context-second-column)
-        (fill-text "3232" 570 126) ; TODO DB
+            (make-context-first-column)
+            (fill-text "Draws" 488 126)
+            (make-context-second-column)
+            (fill-text "3232" 570 126) ; TODO DB
 
-        (make-context-first-column)
-        (fill-text "Total" 488 161) ; TODO DB
-        (make-context-second-column)
-        (fill-text "3234" 570 161) ; TODO DB
+            (make-context-first-column)
+            (fill-text "Total" 488 161) ; TODO DB
+            (make-context-second-column)
+            (fill-text "3234" 570 161) ; TODO DB
 
-        (make-context-first-column)
-        (fill-text "Win Rate" 488 209)
-        (make-context-second-column)
-        (fill-text "53%" 595 209) ; TODO DB
+            (make-context-first-column)
+            (fill-text "Win Rate" 488 209)
+            (make-context-second-column)
+            (fill-text "53%" 595 209) ; TODO DB
 
-        (make-context-first-column)
-        (fill-text "Points" 230 209)
-        (make-context-second-column)
-        (fill-text player-points 326 209)
-        (fill-style rank-color)
-        (fill-text (str "\"" rank-name"\"") 230 244)
+            (make-context-first-column)
+            (fill-text "Points" 230 209)
+            (make-context-second-column)
+            (fill-text player-points 326 209)
+            (fill-style rank-color)
+            (fill-text (str "\"" rank-name"\"") 230 244)
 
-        (make-context-first-column)
-        (fill-text "NANAX Points" 488 244)
-        (make-context-second-column)
-        (fill-text (player-info "nanax_points") 643 244)
-        (fill-style "white")
-        (font "43px \"Oswald\"")
-        (fill-text (str "#" player-rating) 32 244)
-        (let [image (<p! (canvas-lib/loadImage
-                          (.. interaction -user (displayAvatarURL #js {:extension "jpg"}))))]
-          (.drawImage context image 32 32 128 128)
-          (font "57px \"Military Poster\"")
-          (fill-style rank-color)
-          (fill-text username 64 174)
-          (<p! (.writeFile fs "src/assets/stats.png" (.toBuffer canvas "image/png")))
-          (<p! (.reply interaction #js {:files #js ["src/assets/stats.png"]}))))
+            (make-context-first-column)
+            (fill-text "NANAX Points" 488 244)
+            (make-context-second-column)
+            (fill-text (player-info "nanax_points") 643 244)
+            (fill-style "white")
+            (font "43px \"Oswald\"")
+            (fill-text (str "#" player-rating) 32 244)
+            (let [image (<p! (canvas-lib/loadImage
+                              (.. interaction -user (displayAvatarURL #js {:extension "jpg"}))))]
+              (.drawImage context image 32 32 128 128)
+              (font "57px \"Military Poster\"")
+              (fill-style rank-color)
+              (fill-text username 64 174)
+              (<p! (.writeFile fs "src/assets/stats.png" (.toBuffer canvas "image/png")))
+              (<p! (.reply interaction #js {:files #js ["src/assets/stats.png"]}))))
+          (<p! (.reply interaction
+                       #js {:content (str "Sorry, you need to play at "
+                                          "least one NANAX match to get your stats, " username)
+                            :ephemeral true}))))
       (catch js/Error e (do (println "ERROR on-first-image-load get" e)))))))
 
 
