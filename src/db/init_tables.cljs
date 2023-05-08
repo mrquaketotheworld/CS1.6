@@ -330,7 +330,7 @@
   (query
     "INSERT INTO rank (rank, points)
     VALUES
-      ('Bot', 0),
+      ('Bot', -65536),
       ('Noob', 128),
       ('Camper', 256),
       ('Lucker', 512),

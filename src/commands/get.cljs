@@ -62,15 +62,16 @@
 (defn on-first-image-load [interaction]
   (fn [image]
     (go (try
-      (let [user (or (.. interaction -options (getUser "user")) (.. interaction -user))
+      (let [server-id (.. interaction -guild -id)
+            user (or (.. interaction -options (getUser "user")) (.. interaction -user))
             user-id (.-id user)
             username (.-username user)
-            player-info (db-utils/get-first-formatted-row (<p! (player/select-player user-id)))]
-        (if player-info
-          (let [server-id (.. interaction -guild -id)
-                player-points ((db-utils/get-first-formatted-row
+            player-server (db-utils/get-first-formatted-row
                                 (<p! (player-server-points/select-player-by-server
-                                      user-id server-id))) "points")
+                                      user-id server-id)))]
+        (if player-server
+          (let [player-info (db-utils/get-first-formatted-row (<p! (player/select-player user-id)))
+                player-points (player-server "points")
                 rank-name ((db-utils/get-first-formatted-row (<p! (rank/select-rank-by-points
                                                               (.floor js/Math player-points)))) "rank")
                 rank-color (rank-colors rank-name)
