@@ -73,7 +73,9 @@
                                                           (.floor js/Math player-points)))) "rank")
             rank-color (rank-colors rank-name)
             team-ids (db-utils/get-formatted-rows
-                       (<p! (player-team-server/select-team-ids user-id server-id)))]
+                       (<p! (player-team-server/select-team-ids user-id server-id)))
+            player-rating ((db-utils/get-first-formatted-row
+               (<p! (player-server-points/select-player-rating user-id server-id))) "dense_rank")]
         (fill-style "black")
         (.fillRect context 0 0 (.-width canvas) (.-height canvas))
         (global-alpha 0.22)
@@ -130,7 +132,7 @@
         (fill-text (player-info "nanax_points") 644 244)
         (fill-style "white")
         (font "43px \"Oswald\"")
-        (fill-text "#153" 32 244) ; TODO DB
+        (fill-text (str "#" player-rating) 32 244)
         (let [image (<p! (canvas-lib/loadImage
                           (.. interaction -user (displayAvatarURL #js {:extension "jpg"}))))]
           (.drawImage context image 32 32 128 128)

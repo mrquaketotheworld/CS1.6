@@ -15,9 +15,9 @@
 
 (defn select-player-rating [player-id server-id]
   (.query db/pool
-   "SELECT * FROM (SELECT *, DENSE_RANK () OVER (ORDER BY points DESC)
+   "SELECT dense_rank FROM (SELECT player_id, DENSE_RANK () OVER (ORDER BY points DESC)
                   FROM player_server_points WHERE server_id = $1) AS sub WHERE sub.player_id = $2"
-    #js [player-id server-id]))
+    #js [server-id player-id]))
 
 (defn insert-player [client player-id server-id]
   (.query client
