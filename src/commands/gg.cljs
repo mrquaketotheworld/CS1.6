@@ -10,7 +10,9 @@
             [db.models.team :as team]
             [db.models.player-team-server :as player-team-server]
             [db.models.match :as match]
-            [utils.db-utils :as db-utils]))
+            [shared.db-utils :as db-utils]
+            [shared.constants :refer
+              [WHITE GREEN LIGHT-BLACK CYAN RED]]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -21,11 +23,6 @@
 
 (def TEAM-NUMBER 5)
 (def MINUTES-3 180000)
-(def CYAN "#18FFFF")
-(def WHITE "#FFFFFF")
-(def RED "#d00a0a")
-(def GREEN "#00ce21")
-(def LIGHT_BLACK "#2b2d31")
 
 (defn delete-interaction-from-state [interaction-id]
   (swap! state assoc-in [:interactions interaction-id] nil))
@@ -44,7 +41,7 @@
 (defn create-map-embed [map-select]
   (.. (discord/EmbedBuilder.)
       (setTitle map-select)
-      (setColor LIGHT_BLACK)))
+      (setColor LIGHT-BLACK)))
 
 (defn sum-players-points [team-points]
   (reduce (fn [acc player]

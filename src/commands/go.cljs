@@ -5,7 +5,7 @@
             [db.connection :as db]
             [db.models.server :as server]
             [db.models.map-server :as map-server]
-            [utils.db-utils :as db-utils]))
+            [shared.db-utils :as db-utils]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)

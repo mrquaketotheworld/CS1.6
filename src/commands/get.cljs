@@ -8,7 +8,9 @@
             [db.models.player-server-points :as player-server-points]
             [db.models.rank :as rank]
             [db.models.player-team-server :as player-team-server]
-            [utils.db-utils :as db-utils]))
+            [shared.db-utils :as db-utils]
+            [shared.constants :refer
+              [DARK-GREY GREY TOXIC GREEN ORANGE BLUE LIGHT-BLUE CYAN YELLOW PURPLE RED]]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -26,16 +28,17 @@
 (def canvas (canvas-lib/createCanvas 688 276))
 (def context (.getContext canvas "2d"))
 (def rank-colors {
-  "Noob" "#BDBDBD"
-  "Lucker" "#00ce21"
-  "Strawberry Legend" "#ff8413"
-  "Drunken Master" "#13f1ff"
-  "Rambo" "#c8ff2c"
-  "Terminator" "#009fd1"
-  "Terminator 2" "#2c5aff"
-  "Professional" "#a513ff"
-  "Legend" "#ffd600"
-  "Nanaxer" "#d00a0a" })
+  "Bot" DARK-GREY
+  "Noob" GREY
+  "Camper" TOXIC
+  "Lucker" GREEN
+  "Strawberry Legend" ORANGE
+  "Drunken Master" BLUE
+  "Rambo" LIGHT-BLUE
+  "Terminator" CYAN
+  "Legend" YELLOW
+  "Professional" PURPLE
+  "Nanaxer" RED})
 
 (defn fill-style [color]
  (set! (.-fillStyle context) color))
