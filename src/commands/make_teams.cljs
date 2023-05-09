@@ -1,7 +1,7 @@
 (ns commands.make-teams
-  (:require [cljs.core.async :refer [go]]
+  (:require ["discord.js" :as discord]
+            [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
-            ["discord.js" :as discord]
             [clojure.string :as string]))
 
 (defn make-teams [players]

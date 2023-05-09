@@ -1,9 +1,9 @@
 (ns commands.gg
   (:require ["discord.js" :as discord]
+            ["simple-elo-rating" :as elo]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
             [clojure.set]
-            ["simple-elo-rating" :as elo]
             [db.connection :as db]
             [db.models.map-server :as map-server]
             [db.models.player :as player]

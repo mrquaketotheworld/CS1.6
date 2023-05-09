@@ -1,7 +1,7 @@
 (ns commands.quote
-  (:require [cljs.core.async :refer [go]]
+  (:require ["discord.js" :as discord]
+            [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
-            ["discord.js" :as discord]
             [db.models.quote :as quote]))
 
 (def builder
