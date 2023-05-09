@@ -198,13 +198,12 @@
       (wrong-vote-reply event callee-voice-channel-id username))))
 
 (defn init-interaction! [interaction maps]
-  (swap! state update :interactions
-         #(assoc % (.-id interaction) { :maps maps
-                                   :callee-voice-channel-id (.. interaction
-                                                                -member
-                                                                -voice
-                                                                -channel
-                                                                -id)})))
+  (swap! state update :interactions assoc (.-id interaction) { :maps maps
+                                                          :callee-voice-channel-id (.. interaction
+                                                                                       -member
+                                                                                       -voice
+                                                                                       -channel
+                                                                                       -id)}))
 
 (defn get-users-in-voice [interaction]
   (convert-users-to-string (.from js/Array
@@ -226,9 +225,9 @@
                                     (disable-buttons interaction-id)
                                     (<p! (.editReply interaction (create-reply interaction-id)))
                                     (js/setTimeout
-                                      (fn [] (swap! state update-in [:interactions]
-                                                    (fn [old-state]
-                                                      (dissoc old-state interaction-id)))) 5000)
+                                      (fn []
+                                        (swap! state update :interactions dissoc
+                                               interaction-id)) 5000)
                                     (catch js/Error e (println ERROR-MESSAGE-INTERACT e)))) 60000)
                 (init-interaction! interaction maps)
                 (<p! (.reply interaction (create-reply interaction-id)))
