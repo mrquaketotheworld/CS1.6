@@ -285,33 +285,28 @@
                                              :components #js [team1-score-row]})))))
       (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e))))))
 
-(defn interact! [interaction] ; TODO refactor to go block
-   ; FIXME unable use go <p! because of strange compilation errors
-  (.catch (.then (map-server/select-maps (.-guildId interaction) "main")
-    (fn [result]
-      (let [user-id (.. interaction -user -id)
-            pending-interaction (get-in @state [:pendings user-id])]
-        (when pending-interaction
-          (delete-interaction-from-state pending-interaction)
-          (swap! state update-in [:pendings] dissoc user-id)))
-      (js/setTimeout (fn []
-        (let [interaction-id (.-id interaction)
-              match-info (get-match-info interaction-id)]
-          (when match-info
-            (println 'INTERACTION-PENDING-TIMEOUT-REMOVE-EXECUTED)
-            (delete-interaction-from-state interaction-id)
-            (.deleteReply interaction)))) MINUTES-3)
-      (let [map-select (.. (discord/StringSelectMenuBuilder.)
-                         (setCustomId "map-select")
-                         (setPlaceholder "Map"))
-          map-select-row (.addComponents (discord/ActionRowBuilder.) map-select)
-          generated-options-maps (clj->js (generate-maps-options
-                                            (db-utils/get-formatted-rows result)))
-          embed-title (.. (discord/EmbedBuilder.)
-                          (setTitle "What map did you play?")
-                          (setColor CYAN))]
-        (.apply map-select.addOptions map-select generated-options-maps)
-        (.reply interaction #js {:embeds #js [embed-title]
-                                 :components #js [map-select-row]
-                                 :ephemeral true}))))
-          (fn [e] (println "ERROR interact! gg" e))))
+(defn interact! [interaction]
+  (let [map-select (.. (discord/StringSelectMenuBuilder.)
+                           (setCustomId "map-select")
+                           (setPlaceholder "Map"))
+            map-select-row (.addComponents (discord/ActionRowBuilder.) map-select)
+            embed-title (.. (discord/EmbedBuilder.)
+                            (setTitle "What map did you play?")
+                            (setColor CYAN))]
+    (go
+      (try
+        (let [maps (db-utils/get-formatted-rows
+                     (<p! (map-server/select-maps (.-guildId interaction) "main")))
+              generated-options-maps (clj->js (generate-maps-options maps))]
+          (js/setTimeout (fn []
+                           (let [interaction-id (.-id interaction)
+                                 match-info (get-match-info interaction-id)]
+                             (when match-info
+                               (println 'INTERACTION-PENDING-TIMEOUT-REMOVE-EXECUTED)
+                               (delete-interaction-from-state interaction-id)
+                               (.deleteReply interaction)))) MINUTES-3)
+          (.apply map-select.addOptions map-select generated-options-maps)
+          (.reply interaction #js {:embeds #js [embed-title]
+                                   :components #js [map-select-row]
+                                   :ephemeral true}))
+        (catch js/Error e (println "ERROR interact! gg" e))))))
