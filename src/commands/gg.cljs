@@ -1,4 +1,4 @@
-(ns commands.gg
+(ns commands.gg ; TODO deleteReply previous, add pendings, refactor logic
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
@@ -26,6 +26,9 @@
 
 (defn delete-interaction-from-state [interaction-id]
   (swap! state update-in [:interactions] dissoc interaction-id))
+
+(defn update-interaction-in-state [interaction-id k v]
+  (swap! state update-in [:interactions interaction-id] #(assoc % k v)))
 
 (defn correct-score-space [score]
   (if (> (count (str score)) 1) "   " "     "))
@@ -194,7 +197,7 @@
                           (setTitle "Who played for Team 2?")
                           (setColor CYAN))]
     (go (try
-      (swap! state update-in [:interactions interaction-id] #(assoc % custom-id value))
+      (update-interaction-in-state interaction-id custom-id value)
       (case custom-id
         "team1-score"
           (<p! (.update interaction #js {:embeds #js [embed-title-who-team2]
@@ -263,7 +266,7 @@
         (do
           (.apply team1-score.addOptions team1-score generated-options)
           (.apply team2-score.addOptions team2-score generated-options)
-          (swap! state update-in [:interactions interaction-id] #(assoc % custom-id users))
+          (update-interaction-in-state interaction-id custom-id users)
           (case custom-id
             "team2"
               (let [match-info (get-match-info interaction-id)
@@ -282,7 +285,7 @@
                                              :components #js [team1-score-row]})))))
       (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e))))))
 
-(defn interact! [interaction]
+(defn interact! [interaction] ; TODO refactor to go block
    ; FIXME unable use go <p! because of strange compilation errors
   (.catch (.then (map-server/select-maps (.-guildId interaction) "main")
     (fn [result]
