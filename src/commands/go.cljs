@@ -2,8 +2,6 @@
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
-            [db.connection :as db]
-            [db.models.server :as server]
             [db.models.map-server :as map-server]
             [shared.db-utils :as db-utils]))
 
@@ -49,7 +47,7 @@
   (let [emoji-start-end (emoji-maps map-name)]
     (str (reduce (fn [acc char]
                    (str acc (if (js/isNaN char)
-                              (str ":regional_indicator_" (clojure.string/lower-case char) ":")
+                              (str ":regional_indicator_" (.toLowerCase char) ":")
                               (emoji-numbers char))))
                                (str emoji-start-end " ") map-name) " " emoji-start-end)))
 
@@ -100,8 +98,7 @@
                {:map-name (:map-name map-item)
                 :votes (->> map-item
                             :voted-users
-                            count
-                            )}))
+                            count)}))
         (sort-by :votes >)
         (partition-by :votes)
         first)
@@ -212,7 +209,6 @@
 (defn interact! [interaction]
   (let [option (or (.. interaction -options (getString "mapmode")) "main")
         server-id (.. interaction -guild -id)
-        server-name (.. interaction -guild -name)
         interaction-id (.-id interaction)]
     (println "/go INTERACTION" (js/Date.))
     (go (try
@@ -231,8 +227,7 @@
                                     (catch js/Error e (println ERROR-MESSAGE-INTERACT e)))) 60000)
                 (init-interaction! interaction maps)
                 (<p! (.reply interaction (create-reply interaction-id)))
-                (let [users-in-voice (get-users-in-voice interaction)
-                      channel-id (.. interaction -channel -id)]
+                (let [users-in-voice (get-users-in-voice interaction)]
                   (<p! (.followUp interaction users-in-voice))))
                 (<p! (.reply
                        interaction #js {:content (str "You need to be in a voice "
