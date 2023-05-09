@@ -19,16 +19,15 @@
       (setName "gg")
       (setDescription "Save the match result!")))
 
-(def state (atom {:pendings {} :interactions {}}))
+(def state (atom {:interactions {}}))
 
 (def TEAM-NUMBER 5)
-(def MINUTES-3 180000)
 
-(defn delete-interaction-from-state [interaction-id]
-  (swap! state update-in [:interactions] dissoc interaction-id))
+(defn update-interaction-in-state [user-id k v]
+  (swap! state update-in [:interactions user-id] #(assoc % k v)))
 
-(defn update-interaction-in-state [interaction-id k v]
-  (swap! state update-in [:interactions interaction-id] #(assoc % k v)))
+(defn reset-interaction-in-state [user-id]
+  (swap! state update-in [:interactions] dissoc user-id))
 
 (defn correct-score-space [score]
   (if (> (count (str score)) 1) "   " "     "))
@@ -50,11 +49,11 @@
   (reduce (fn [acc player]
             (+ acc (player "points"))) 0 team-points))
 
-(defn get-interaction-id [interaction]
-  (.. interaction -message -interaction -id))
+(defn get-user-id [interaction]
+  (.. interaction -user -id))
 
-(defn get-match-info [interaction-id]
-  (get-in @state [:interactions interaction-id]))
+(defn get-interaction-form [user-id]
+  (get-in @state [:interactions user-id]))
 
 (defn get-users [team]
   (map #(identity {:username (:username %) :user-id (:user-id %)}) team))
@@ -77,7 +76,7 @@
 
 (defn handle-collector-event-button-save! [interaction]
   (go (try
-        (let [match-info (get-match-info (get-interaction-id interaction))
+        (let [match-info (get-interaction-form (get-user-id interaction))
               team1-usernames (create-user-list-string (match-info "team1"))
               team2-usernames (create-user-list-string (match-info "team2"))
               map-select (match-info "map-select")
@@ -152,7 +151,7 @@
                                                    server-id))
               (<p!
                 (match/insert-match client map-select team1-score team2-score team1-id team2-id))
-              (delete-interaction-from-state (get-interaction-id interaction))
+              (reset-interaction-in-state (get-user-id interaction))
               (<p! (.update interaction #js {:embeds #js []
                                              :content "Match successfully saved!"
                                              :components #js []}))
@@ -170,7 +169,7 @@
         (catch js/Error e (do (println "ERROR handle-collector-event-button-save! gg" e))))))
 
 (defn handle-collector-event-select-menu! [interaction]
-  (let [interaction-id (get-interaction-id interaction)
+  (let [user-id (get-user-id interaction)
         custom-id (.-customId interaction)
         value (first (.-values interaction))
         team1-row (.addComponents (discord/ActionRowBuilder.)
@@ -197,14 +196,13 @@
                           (setTitle "Who played for Team 2?")
                           (setColor CYAN))]
     (go (try
-      (update-interaction-in-state interaction-id custom-id value)
+      (update-interaction-in-state user-id custom-id value)
       (case custom-id
         "team1-score"
           (<p! (.update interaction #js {:embeds #js [embed-title-who-team2]
                                          :components #js [team2-row]}))
         "team2-score"
-          (let [user-id (.. interaction -user -id)
-                match-info (get-match-info interaction-id)
+          (let [match-info (get-interaction-form user-id)
                 map-select (match-info "map-select")
                 team1-score (js/Number (match-info "team1-score"))
                 team2-score (js/Number (match-info "team2-score"))
@@ -221,7 +219,6 @@
                 finish-message-map (create-map-embed map-select)
                 finish-message-team1 (create-team-embed team1-score team2-score team1-usernames)
                 finish-message-team2 (create-team-embed team2-score team1-score team2-usernames)]
-            (swap! state update-in [:pendings] assoc user-id interaction-id)
             (<p! (.update interaction #js {:content finish-message
                                            :embeds #js [finish-message-map
                                                         finish-message-team1
@@ -234,7 +231,7 @@
 ))
 
 (defn handle-collector-event-user-select! [interaction]
-  (let [interaction-id (get-interaction-id interaction)
+  (let [user-id (get-user-id interaction)
         custom-id (.-customId interaction)
         users (reduce (fn [acc user-item]
                         (let [user-id (first user-item)
@@ -266,10 +263,10 @@
         (do
           (.apply team1-score.addOptions team1-score generated-options)
           (.apply team2-score.addOptions team2-score generated-options)
-          (update-interaction-in-state interaction-id custom-id users)
+          (update-interaction-in-state user-id custom-id users)
           (case custom-id
             "team2"
-              (let [match-info (get-match-info interaction-id)
+              (let [match-info (get-interaction-form user-id)
                     team1-match-info (match-info "team1")
                     team2-match-info (match-info "team2")
                     team1-users-set (set (map #(:user-id %) team1-match-info))
@@ -286,7 +283,8 @@
       (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e))))))
 
 (defn interact! [interaction]
-  (let [map-select (.. (discord/StringSelectMenuBuilder.)
+  (let [user-id (get-user-id interaction)
+        map-select (.. (discord/StringSelectMenuBuilder.)
                            (setCustomId "map-select")
                            (setPlaceholder "Map"))
             map-select-row (.addComponents (discord/ActionRowBuilder.) map-select)
@@ -297,16 +295,17 @@
       (try
         (let [maps (db-utils/get-formatted-rows
                      (<p! (map-server/select-maps (.-guildId interaction) "main")))
-              generated-options-maps (clj->js (generate-maps-options maps))]
-          (js/setTimeout (fn []
-                           (let [interaction-id (.-id interaction)
-                                 match-info (get-match-info interaction-id)]
-                             (when match-info
-                               (println 'INTERACTION-PENDING-TIMEOUT-REMOVE-EXECUTED)
-                               (delete-interaction-from-state interaction-id)
-                               (.deleteReply interaction)))) MINUTES-3)
+              generated-options-maps (clj->js (generate-maps-options maps))
+              pending-interaction (get-interaction-form user-id)]
+          (try (when pending-interaction
+             (<p! (.deleteReply (:interaction pending-interaction))))
+               (catch js/Error e (println "ERROR interact!:deleteReply gg" e)))
+          (reset-interaction-in-state user-id)
+          (update-interaction-in-state user-id :interaction interaction)
           (.apply map-select.addOptions map-select generated-options-maps)
-          (.reply interaction #js {:embeds #js [embed-title]
+          (.reply interaction #js {:content (str "If you make a mistake filling out the form, "
+                                                 "run the `/gg` command again")
+                                   :embeds #js [embed-title]
                                    :components #js [map-select-row]
                                    :ephemeral true}))
         (catch js/Error e (println "ERROR interact! gg" e))))))
