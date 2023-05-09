@@ -210,9 +210,9 @@
                   team1-usernames (create-user-list-string (match-info "team1"))
                   team2-usernames (create-user-list-string (match-info "team2"))
                   finish-message (str
-                                  "If the data about match is CORRECT "
+                                  "If the data about match is **CORRECT** "
                                   "then click on the save button.\n"
-                                  "If the data about match is WRONG "
+                                  "If the data about match is **WRONG** "
                                   "then run `/gg` again.\n\n"
                                   (discord/bold
                                    (str ":warning: If you click on the save button, "
