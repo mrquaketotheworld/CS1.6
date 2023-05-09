@@ -60,7 +60,9 @@
 (defn on-first-image-load [interaction]
   (fn [image]
     (go (try
-      (let [server-id (.. interaction -guild -id)
+      (let [server (.-guild interaction)
+            server-id (.-id server)
+            server-name (.-name server)
             user (or (.. interaction -options (getUser "user")) (.. interaction -user))
             user-id (.-id user)
             username (.-username user)
@@ -138,7 +140,8 @@
             (make-context-first-column)
             (fill-text "Win Rate" 488 209)
             (make-context-second-column)
-            (fill-text (str (.toFixed player-win-rate) "%") 595 209)
+            (fill-text (str (.toFixed (if (js/isNaN player-win-rate) 0 player-win-rate)) "%")
+                       595 209)
 
             (make-context-first-column)
             (fill-text "Points" 230 209)
@@ -164,7 +167,8 @@
                                                           (.toBuffer canvas "image/png"))]}))))
           (<p! (.reply interaction
                        #js {:content (str "Sorry, you need to play at "
-                                          "least one NANAX match to get your stats, " username)
+                                          "least one **" server-name "** match to get your stats, "
+                                          username)
                             :ephemeral true}))))
       (catch js/Error e (println "ERROR on-first-image-load get" e))))))
 
