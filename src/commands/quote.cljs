@@ -25,19 +25,17 @@
                            (if quote-item
                              #js {:content (str "> "
                                                 (quote-item "quote")
-                                                      " \n "
+                                                " \n "
                                                 (quote-item "author"))}
                              #js {:content (str "Sorry, word **" word "** not found.")
-                                  :ephemeral true}
-                             ))
+                                  :ephemeral true}))
                          (let [result (<p! (quote/get-quotes-query))
                                quotes (js->clj (.-rows result))
                                quote-item (get quotes (rand-int (count quotes)))]
-                             #js {:content (str "> "
-                                                (quote-item "quote")
-                                                      " \n "
-                                                (quote-item "author"))}
-                           ))))
+                           #js {:content (str "> "
+                                              (quote-item "quote")
+                                              " \n "
+                                              (quote-item "author"))}))))
 
           (catch js/Error e (println "ERROR interact! quote" e))))))
 
