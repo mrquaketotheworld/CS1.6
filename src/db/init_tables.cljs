@@ -57,7 +57,7 @@
       created_at timestamptz DEFAULT NOW() NOT NULL
     )"))
 
-(defn create-player []
+(defn create-player [] ; TODO add trigger
   (query
     "CREATE TABLE IF NOT EXISTS player (
       player_id VARCHAR(255) PRIMARY KEY,
@@ -68,6 +68,19 @@
       created_at timestamptz DEFAULT NOW() NOT NULL,
       updated_at timestamptz DEFAULT NOW() NOT NULL
     )"))
+
+(defn add-player-trigger []
+  (query "CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+         RETURNS TRIGGER AS $$
+         BEGIN
+           NEW.updated_at = NOW();
+             RETURN NEW;
+             END;
+         $$ LANGUAGE plpgsql;
+         CREATE TRIGGER set_timestamp
+         BEFORE UPDATE ON player
+         FOR EACH ROW
+           EXECUTE PROCEDURE trigger_set_timestamp()"))
 
 (defn create-quote []
   (query
@@ -353,6 +366,7 @@
         (<p! (create-map))
         (<p! (create-maptype))
         (<p! (create-player))
+        (<p! (add-player-trigger))
         (<p! (create-quote))
         (<p! (create-match))
         (<p! (create-map-server))
