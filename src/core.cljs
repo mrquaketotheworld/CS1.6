@@ -86,7 +86,7 @@
             "make-teams" (make-teams/interact! interaction)
             "go" (go-command/interact! interaction)
             "gg" (do ; TODO change role id
-                   (if (.has (.. interaction -member -roles -cache) "1104708258406608936")
+                   (if true
                      (gg/interact! interaction)
                      (<p!
                        (.reply interaction #js

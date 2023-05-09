@@ -57,7 +57,7 @@
       created_at timestamptz DEFAULT NOW() NOT NULL
     )"))
 
-(defn create-player [] ; TODO add trigger
+(defn create-player []
   (query
     "CREATE TABLE IF NOT EXISTS player (
       player_id VARCHAR(255) PRIMARY KEY,
