@@ -1,6 +1,5 @@
 (ns commands.get
   (:require ["discord.js" :as discord]
-            ["fs/promises" :as fs]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
             [canvas :as canvas-lib]
@@ -140,7 +139,7 @@
             (make-context-first-column)
             (fill-text "Win Rate" 488 209)
             (make-context-second-column)
-            (fill-text (.toFixed player-win-rate 2) 595 209)
+            (fill-text (str (.toFixed player-win-rate) "%") 595 209)
 
             (make-context-first-column)
             (fill-text "Points" 230 209)
@@ -157,13 +156,13 @@
             (font "43px \"Oswald\"")
             (fill-text (str "#" player-rating) 32 244)
             (let [image (<p! (canvas-lib/loadImage
-                              (.. interaction -user (displayAvatarURL #js {:extension "jpg"}))))]
+                              (.displayAvatarURL user #js {:extension "jpg"})))]
               (.drawImage context image 32 32 128 128)
               (font "57px \"Military Poster\"")
               (fill-style rank-color)
               (fill-text username 64 174)
-              (<p! (.writeFile fs "src/assets/stats.png" (.toBuffer canvas "image/png")))
-              (<p! (.reply interaction #js {:files #js ["src/assets/stats.png"]}))))
+              (<p! (.reply interaction #js {:files #js [(discord/AttachmentBuilder.
+                                                          (.toBuffer canvas "image/png"))]}))))
           (<p! (.reply interaction
                        #js {:content (str "Sorry, you need to play at "
                                           "least one NANAX match to get your stats, " username)
