@@ -10,16 +10,16 @@
             [db.models.match :as match]
             [shared.db-utils :as db-utils]
             [shared.constants :refer
-              [DARK-GREY GREY TOXIC GREEN ORANGE BLUE LIGHT-BLUE CYAN YELLOW PURPLE RED]]))
+             [DARK-GREY GREY TOXIC GREEN ORANGE BLUE LIGHT-BLUE CYAN YELLOW PURPLE RED]]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
       (setName "get")
       (setDescription "Get user stats")
       (addUserOption (fn [option]
-                         (.. option
-                             (setName "user")
-                             (setDescription "Select user"))))
+                       (.. option
+                           (setName "user")
+                           (setDescription "Select user"))))
       toJSON))
 
 (canvas-lib/registerFont "src/assets/Oswald-Regular.ttf" #js {:family "Oswald Regular"})
@@ -27,30 +27,29 @@
 
 (def canvas (canvas-lib/createCanvas 688 276))
 (def context (.getContext canvas "2d"))
-(def rank-colors {
-  "Bot" DARK-GREY
-  "Noob" GREY
-  "Camper" TOXIC
-  "Lucker" GREEN
-  "Strawberry Legend" ORANGE
-  "Drunken Master" BLUE
-  "Rambo" LIGHT-BLUE
-  "Terminator" CYAN
-  "Legend" YELLOW
-  "Professional" PURPLE
-  "Nanaxer" RED})
+(def rank-colors {"Bot" DARK-GREY
+                  "Noob" GREY
+                  "Camper" TOXIC
+                  "Lucker" GREEN
+                  "Strawberry Legend" ORANGE
+                  "Drunken Master" BLUE
+                  "Rambo" LIGHT-BLUE
+                  "Terminator" CYAN
+                  "Legend" YELLOW
+                  "Professional" PURPLE
+                  "Nanaxer" RED})
 
 (defn fill-style [color]
- (set! (.-fillStyle context) color))
+  (set! (.-fillStyle context) color))
 
 (defn fill-text [text x y]
- (.fillText context text x y))
+  (.fillText context text x y))
 
 (defn global-alpha [number]
- (set! (.-globalAlpha context) number))
+  (set! (.-globalAlpha context) number))
 
 (defn font [font-name]
- (set! (.-font context) font-name))
+  (set! (.-font context) font-name))
 
 (defn make-context-first-column []
   (fill-style "white"))
@@ -167,7 +166,7 @@
                        #js {:content (str "Sorry, you need to play at "
                                           "least one NANAX match to get your stats, " username)
                             :ephemeral true}))))
-      (catch js/Error e (do (println "ERROR on-first-image-load get" e)))))))
+      (catch js/Error e (println "ERROR on-first-image-load get" e))))))
 
 
 (defn interact! [interaction]
