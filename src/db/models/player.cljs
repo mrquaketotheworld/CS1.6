@@ -8,6 +8,6 @@
 
 (defn select-player [player-id]
   (.query db/pool
-          "SELECT nanax_points, tag, country FROM player WHERE player_id = $1"
+          "SELECT nanax_points, tag FROM player WHERE player_id = $1"
     #js [player-id]))
 

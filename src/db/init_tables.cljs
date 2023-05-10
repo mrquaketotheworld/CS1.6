@@ -365,4 +365,4 @@
         (<p! (insert-maptype))
         (<p! (insert-quote))
         (<p! (insert-rank))
-        (catch js/Error e (do (println "ERROR init-tables" e))))))
+        (catch js/Error e (println "ERROR init-tables" e)))))
