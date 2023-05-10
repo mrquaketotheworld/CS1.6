@@ -138,18 +138,14 @@
             (fill-text player-total-matches 569 161)
 
             (make-context-first-column)
-            (fill-text "Win Rate" 488 209)
+            (fill-text "Win Rate" 488 244)
             (make-context-second-column)
             (fill-text (str (.toFixed (if (js/isNaN player-win-rate) 0 player-win-rate)) "%")
-                       595 209)
+                       595 244)
 
             (fill-style rank-color)
             (fill-text (str "\"" rank-name"\"") 230 244)
 
-            (make-context-first-column)
-            (fill-text "NANAX Points" 488 244)
-            (make-context-second-column)
-            (fill-text (player-info "nanax_points") 643 244)
             (fill-style "white")
             (font "43px \"Oswald\"")
             (fill-text (str "#" player-rating) 32 244)

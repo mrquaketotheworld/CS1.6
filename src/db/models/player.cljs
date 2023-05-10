@@ -6,7 +6,7 @@
     #js [player-id player]))
 
 (defn select-player [player-id]
-  (.query db/pool "SELECT nanax_points, tag FROM player WHERE player_id = $1" #js [player-id]))
+  (.query db/pool "SELECT tag FROM player WHERE player_id = $1" #js [player-id]))
 
 (defn update-player [player-id column value]
   (.query db/pool (str "UPDATE player SET " column " = $2 WHERE player_id = $1")
