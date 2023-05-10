@@ -120,28 +120,28 @@
             (make-context-first-column)
             (fill-text "Wins" 488 56)
             (make-context-second-column)
-            (fill-text player-total-wins 569 56)
+            (fill-text player-total-wins 570 56)
 
             (make-context-first-column)
             (fill-text "Losses" 488 91)
             (make-context-second-column)
-            (fill-text player-total-losses 569 91)
+            (fill-text player-total-losses 570 91)
 
             (make-context-first-column)
             (fill-text "Draws" 488 126)
             (make-context-second-column)
-            (fill-text player-total-draws 569 126)
+            (fill-text player-total-draws 570 126)
 
             (make-context-first-column)
             (fill-text "Total" 488 161)
             (make-context-second-column)
-            (fill-text player-total-matches 569 161)
+            (fill-text player-total-matches 570 161)
 
             (make-context-first-column)
             (fill-text "Win Rate" 488 209)
             (make-context-second-column)
             (fill-text (str (.toFixed (if (js/isNaN player-win-rate) 0 player-win-rate)) "%")
-                       596 209)
+                       595 209)
 
             (fill-style rank-color)
             (fill-text (str "\"" rank-name"\"") 230 244)
@@ -156,9 +156,9 @@
             (let [image (<p! (canvas-lib/loadImage
                               (.displayAvatarURL user #js {:extension "jpg"})))]
               (.drawImage context image 32 32 128 128)
-              (font "57px \"Military Poster\"")
+              (font "58px \"Military Poster\"")
               (fill-style rank-color)
-              (fill-text username 64 174)
+              (fill-text username 104 180)
               (<p! (.reply interaction #js {:files #js [(discord/AttachmentBuilder.
                                                           (.toBuffer canvas "image/png"))]}))))
           (<p! (.reply interaction
