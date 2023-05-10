@@ -11,3 +11,5 @@
 (def PG_PASSWORD (config "PG_PASSWORD"))
 (def PG_PORT (config "PG_PORT"))
 (def GUILD (config "GUILD"))
+(def GUILD_ADMIN (config "GUILD_ADMIN"))
+(def GUILD_SCORE (config "GUILD_SCORE"))
