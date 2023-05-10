@@ -102,7 +102,7 @@
             (fill-style "black")
             (.fillRect context 0 0 (.-width canvas) (.-height canvas))
             (global-alpha 0.22)
-            (.drawImage context image 50 0 (.-naturalWidth image) (.-naturalHeight image))
+            (.drawImage context image 50 1 (.-naturalWidth image) (.-naturalHeight image))
             (global-alpha 1)
             (font "28px Oswald")
             (fill-style "white")
