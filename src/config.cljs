@@ -13,3 +13,4 @@
 (def GUILD (config "GUILD"))
 (def GUILD_ADMIN (config "GUILD_ADMIN"))
 (def GUILD_SCORE (config "GUILD_SCORE"))
+(def GUILD_CHANNEL_SCORE (config "GUILD_CHANNEL_SCORE"))

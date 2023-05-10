@@ -2,7 +2,7 @@
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
-            [config :refer [TOKEN GUILD_ADMIN GUILD_SCORE]]
+            [config :refer [TOKEN GUILD_ADMIN GUILD_SCORE GUILD_CHANNEL_SCORE]]
             [commands.quote :as quote]
             [commands.make-teams :as make-teams]
             [commands.go :as go-command]
@@ -75,7 +75,8 @@
         (let [server-id (.. interaction -guild -id)
               server-name (.. interaction -guild -name)
               server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))
-              user-roles (.. interaction -member -roles -cache)]
+              user-roles (.. interaction -member -roles -cache)
+              channel-id (.-channelId interaction)]
         (init-collector-type-button interaction)
         (init-collector-type-select-menu interaction)
         (init-collector-type-user-select interaction)
@@ -87,12 +88,18 @@
             "quote" (quote/interact! interaction)
             "make-teams" (make-teams/interact! interaction)
             "go" (go-command/interact! interaction)
-            "gg" (if (or (.has user-roles GUILD_ADMIN) (.has user-roles GUILD_SCORE))
-                   (gg/interact! interaction)
-                   (<p!
-                     (.reply interaction #js
-                             {:content "Sorry, you do not have permissions to use this command"
-                              :ephemeral true})))
+            "gg" (if (= channel-id GUILD_CHANNEL_SCORE)
+                   (if (or (.has user-roles GUILD_ADMIN) (.has user-roles GUILD_SCORE))
+                     (gg/interact! interaction)
+                     (<p!
+                       (.reply interaction #js
+                               {:content "Sorry, you do not have permissions to use this command"
+                                :ephemeral true})))
+                   (<p! (.reply interaction #js
+                                {:content
+                                 (str "Sorry, command only works in the <#"
+                                      GUILD_CHANNEL_SCORE "> channel")
+                                 :ephemeral true})))
             "get" (get-command/interact! interaction)
             "set" (set-command/interact! interaction))))
   (catch js/Error e (println "ERROR handle-interaction core" e)))))
