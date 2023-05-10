@@ -1,7 +1,8 @@
 (ns commands.set
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
-            [cljs.core.async.interop :refer-macros [<p!]]))
+            [cljs.core.async.interop :refer-macros [<p!]]
+            [db.models.player :as player]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)
@@ -15,14 +16,15 @@
                              (setMaxLength 10))))
       toJSON))
 
-
 (defn interact! [interaction]
   (go (try
-        (let [tag (.. interaction -options (getString "tag"))]
+        (let [tag (.. interaction -options (getString "tag"))
+              user-id (.. interaction -user -id)]
           (if tag
             (do
-              
-              (<p! (.reply interaction tag)))
+              (<p! (player/update-player user-id "tag" tag))
+              (<p! (.reply interaction #js {:content (str "Your new tag is " tag)
+                                            :ephemeral true})))
             (<p! (.reply interaction #js {:content "You have not changed any settings"
                                           :ephemeral true}))))
         (catch js/Error e (println "ERROR interact! set" e)))))
