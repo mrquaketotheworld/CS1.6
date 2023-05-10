@@ -36,13 +36,6 @@
       created_at timestamptz DEFAULT NOW() NOT NULL
     )"))
 
-(defn create-country []
-  (query
-    "CREATE TABLE IF NOT EXISTS country (
-      country VARCHAR(100) PRIMARY KEY,
-      created_at timestamptz DEFAULT NOW() NOT NULL
-    )"))
-
 (defn create-map []
   (query
     "CREATE TABLE IF NOT EXISTS map (
@@ -64,7 +57,6 @@
       player VARCHAR(255) NOT NULL,
       nanax_points INT DEFAULT 0 NOT NULL,
       tag VARCHAR(255) DEFAULT 'UNKNOWN' NOT NULL,
-      country VARCHAR(255) DEFAULT 'UNKNOWN' NOT NULL REFERENCES country(country),
       created_at timestamptz DEFAULT NOW() NOT NULL,
       updated_at timestamptz DEFAULT NOW() NOT NULL
     )"))
@@ -190,9 +182,6 @@
          ('F-TeN'),
          ('antivolt'),
          ('NanaX Community Bot')"))
-
-(defn insert-country []
-  (query "INSERT INTO country (country) VALUES ('UNKNOWN')"))
 
 (defn insert-map []
   (query
@@ -362,7 +351,6 @@
         (<p! (create-server))
         (<p! (create-rank))
         (<p! (create-author))
-        (<p! (create-country))
         (<p! (create-map))
         (<p! (create-maptype))
         (<p! (create-player))
@@ -373,7 +361,6 @@
         (<p! (create-player-server-points))
         (<p! (create-player-team-server))
         (<p! (insert-author))
-        (<p! (insert-country))
         (<p! (insert-map))
         (<p! (insert-maptype))
         (<p! (insert-quote))
