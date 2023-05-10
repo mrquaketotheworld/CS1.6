@@ -18,7 +18,6 @@ pom.xml.asc
 
 .hgignore
 .hg/
-/out
 config.edn
 stats.png
 .env
