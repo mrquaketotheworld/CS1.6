@@ -115,27 +115,27 @@
             (make-context-first-column)
             (fill-text "Points" 230 91)
             (make-context-second-column)
-            (fill-text (.toFixed player-points 2) 309 91)
+            (fill-text (.toFixed player-points 2) 308 91)
 
             (make-context-first-column)
             (fill-text "Wins" 488 56)
             (make-context-second-column)
-            (fill-text player-total-wins 570 56)
+            (fill-text player-total-wins 569 56)
 
             (make-context-first-column)
             (fill-text "Losses" 488 91)
             (make-context-second-column)
-            (fill-text player-total-losses 570 91)
+            (fill-text player-total-losses 569 91)
 
             (make-context-first-column)
             (fill-text "Draws" 488 126)
             (make-context-second-column)
-            (fill-text player-total-draws 570 126)
+            (fill-text player-total-draws 569 126)
 
             (make-context-first-column)
             (fill-text "Total" 488 161)
             (make-context-second-column)
-            (fill-text player-total-matches 570 161)
+            (fill-text player-total-matches 569 161)
 
             (make-context-first-column)
             (fill-text "Win Rate" 488 209)
