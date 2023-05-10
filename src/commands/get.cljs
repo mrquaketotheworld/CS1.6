@@ -110,7 +110,7 @@
             (make-context-first-column)
             (fill-text "Tag" 230 56)
             (make-context-second-column)
-            (fill-text (player-info "tag") 309 56)
+            (fill-text (.toLowerCase (player-info "tag")) 309 56)
 
             (make-context-first-column)
             (fill-text "Points" 230 91)
