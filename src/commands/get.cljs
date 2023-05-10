@@ -57,6 +57,13 @@
 (defn make-context-second-column []
   (fill-style (rank-colors "Nanaxer")))
 
+(defn column-font-normal []
+  (font "28px Oswald"))
+
+(defn format-tag [tag]
+  (let [tag-width (.. context (measureText tag) -width)]
+    (when (> tag-width 160) (font "18px Oswald"))))
+
 (defn on-first-image-load [interaction]
   (fn [image]
     (go (try
@@ -71,6 +78,7 @@
                                       user-id server-id)))]
         (if player-server
           (let [player-info (db-utils/get-first-formatted-row (<p! (player/select-player user-id)))
+                tag (player-info "tag")
                 player-points (player-server "points")
                 rank-name ((db-utils/get-first-formatted-row (<p! (rank/select-rank-by-points
                                                           (.floor js/Math player-points)))) "rank")
@@ -104,13 +112,15 @@
             (global-alpha 0.22)
             (.drawImage context image 50 1 (.-naturalWidth image) (.-naturalHeight image))
             (global-alpha 1)
-            (font "28px Oswald")
+            (column-font-normal)
             (fill-style "white")
 
             (make-context-first-column)
             (fill-text "Tag" 239 56)
             (make-context-second-column)
-            (fill-text (.toLowerCase (player-info "tag")) 317 56)
+            (format-tag tag)
+            (fill-text tag 317 56)
+            (column-font-normal)
 
             (make-context-first-column)
             (fill-text "Points" 239 91)

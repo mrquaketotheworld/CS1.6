@@ -11,9 +11,9 @@
       (addStringOption (fn [option]
                          (.. option
                              (setName "tag")
-                             (setDescription "Enter your tag, 1-10 characters")
+                             (setDescription "Enter your tag, 1-13 characters")
                              (setMinLength 1)
-                             (setMaxLength 10))))
+                             (setMaxLength 13))))
       toJSON))
 
 (defn interact! [interaction]
