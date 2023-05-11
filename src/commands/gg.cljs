@@ -46,15 +46,20 @@
       (setTitle map-select)
       (setColor LIGHT-BLACK)))
 
-(defn create-button-row [custom-id label button-style]
-  (.addComponents (discord/ActionRowBuilder.)
-                  (.. (discord/ButtonBuilder.)
-                      (setCustomId custom-id)
-                      (setLabel label)
-                      (setStyle button-style))))
+(defn create-button [custom-id label button-style]
+  (.. (discord/ButtonBuilder.)
+      (setCustomId custom-id)
+      (setLabel label)
+      (setStyle button-style)))
 
-(def button-cancel-row
-  (create-button-row "button-cancel" "Cancel" (.-Primary discord/ButtonStyle)))
+(defn create-row [& components]
+  (let [row-builder (discord/ActionRowBuilder.)]
+    (.apply row-builder.addComponents row-builder (clj->js components))))
+
+(def button-cancel (create-button "button-cancel" "Cancel" (.-Primary discord/ButtonStyle)))
+(def button-save (create-button "button-save" "Save" (.-Danger discord/ButtonStyle)))
+(def button-cancel-row (create-row button-cancel))
+(def button-cancel-save-row (create-row button-cancel button-save))
 
 (defn sum-players-points [team-points]
   (reduce (fn [acc player]
@@ -119,7 +124,8 @@
                     (let [player-server (.-rows (<p! (player-server-points/select-player-by-server
                                                       client user-id-iter server-id)))]
                       (when (empty? player-server)
-                        (<p! (player-server-points/insert-player client user-id-iter server-id))))))
+                        (<p! (player-server-points/insert-player
+                               client user-id-iter server-id))))))
                 (let [team1-points
                       (db-utils/get-formatted-rows (<p! (player-server-points/select-players-points
                                                          client (clj->js team1-ids) server-id)))
@@ -208,7 +214,6 @@
                                       (setPlaceholder "Team 2")
                                       (setMinValues TEAM-NUMBER)
                                       (setMaxValues TEAM-NUMBER)))
-        button-save-row (create-button-row "button-save" "Save" (.-Danger discord/ButtonStyle))
         embed-title-who-team1 (.. (discord/EmbedBuilder.)
                                   (setTitle "Who played for Team 1?")
                                   (setColor CYAN))
@@ -243,7 +248,7 @@
                                              :embeds #js [finish-message-map
                                                           finish-message-team1
                                                           finish-message-team2]
-                                             :components #js [button-cancel-row button-save-row]})))
+                                            :components #js [button-cancel-save-row]})))
             "map-select"
             (<p! (.update interaction #js {:embeds #js [embed-title-who-team1]
                                            :components #js [team1-row button-cancel-row]})))
@@ -291,14 +296,16 @@
                       team1-users-set (set (map #(:user-id %) team1-match-info))
                       team2-users-set (set (map #(:user-id %) team2-match-info))]
                   (if (= (count (clojure.set/intersection team1-users-set team2-users-set)) 0)
-                    (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team2]
-                                                   :components #js [team2-score-row button-cancel-row]}))
+                    (<p! (.update interaction #js
+                                  {:embeds #js [embed-title-what-score-team2]
+                                   :components #js [team2-score-row button-cancel-row]}))
                     (<p! (.reply interaction #js {:content
                                              "One player cannot play on two teams at the same time"
                                                   :ephemeral true}))))
                 "team1"
-                (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team1]
-                                               :components #js [team1-score-row button-cancel-row]})))))
+                (<p! (.update interaction #js
+                              {:embeds #js [embed-title-what-score-team1]
+                               :components #js [team1-score-row button-cancel-row]})))))
           (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e))))))
 
 (defn interact! [interaction]
@@ -327,7 +334,8 @@
           (update-interaction-in-state user-id :interaction interaction)
           (update-interaction-in-state user-id :init-message init-message)
           (.apply map-select.addOptions map-select generated-options-maps)
-          (<p! (.reply interaction #js {:content (str "If you make a mistake filling out the form, "
+          (<p! (.reply interaction #js {:content (str
+                                                  "If you make a mistake filling out the form, "
                                                   "run the `/gg` command again")
                                     :embeds #js [embed-title]
                                     :components #js [map-select-row button-cancel-row]
