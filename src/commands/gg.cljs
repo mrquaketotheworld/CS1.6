@@ -152,6 +152,7 @@
                                                        server-id))
                   (<p!
                   (match/insert-match client map-select team1-score team2-score team1-id team2-id))
+                  (<p! (.delete (:init-message match-info)))
                   (reset-interaction-in-state (get-user-id interaction))
                   (<p! (.update interaction #js {:embeds #js []
                                                  :content "Match successfully saved!"
@@ -296,16 +297,21 @@
         (let [maps (db-utils/get-formatted-rows
                     (<p! (map-server/select-maps (.-guildId interaction) "main")))
               generated-options-maps (clj->js (generate-maps-options maps))
-              pending-interaction (get-interaction-form user-id)]
+              pending-interaction (get-interaction-form user-id)
+              channel (.. interaction -channel)
+              init-message (<p! (.send channel (str ":warning: <@" user-id "> is writing "
+                                       "the result of the match now :warning:")))]
           (try (when pending-interaction
+                 (<p! (.delete (:init-message pending-interaction)))
                  (<p! (.deleteReply (:interaction pending-interaction))))
                (catch js/Error e (println "ERROR interact!:deleteReply gg" e)))
           (reset-interaction-in-state user-id)
           (update-interaction-in-state user-id :interaction interaction)
+          (update-interaction-in-state user-id :init-message init-message)
           (.apply map-select.addOptions map-select generated-options-maps)
-          (.reply interaction #js {:content (str "If you make a mistake filling out the form, "
-                                                 "run the `/gg` command again")
-                                   :embeds #js [embed-title]
-                                   :components #js [map-select-row]
-                                   :ephemeral true}))
+          (<p! (.reply interaction #js {:content (str "If you make a mistake filling out the form, "
+                                                  "run the `/gg` command again")
+                                    :embeds #js [embed-title]
+                                    :components #js [map-select-row]
+                                    :ephemeral true})))
         (catch js/Error e (println "ERROR interact! gg" e))))))
