@@ -77,7 +77,8 @@
 
 (defn handle-collector-event-button-save! [interaction]
   (go (try
-        (let [match-info (get-interaction-form (get-user-id interaction))
+        (let [channel (.. interaction -channel)
+              match-info (get-interaction-form (get-user-id interaction))
               team1-usernames (create-user-list-string (match-info "team1"))
               team2-usernames (create-user-list-string (match-info "team2"))
               map-select (match-info "map-select")
@@ -150,19 +151,21 @@
                                                        (nth team2-ids 4)
                                                        team2-id
                                                        server-id))
-                  (<p!
-                  (match/insert-match client map-select team1-score team2-score team1-id team2-id))
-                  (<p! (.delete (:init-message match-info)))
-                  (reset-interaction-in-state (get-user-id interaction))
-                  (<p! (.update interaction #js {:embeds #js []
-                                                 :content "Match successfully saved!"
-                                                 :components #js []}))
-                  (<p! (.followUp interaction
-                                  #js {:content
-                                       (str "Saved by <@" (.. interaction -user -id) ">")
-                                       :embeds #js [(create-map-embed map-select)
-                                      (create-team-embed team1-score team2-score team1-usernames)
-                                  (create-team-embed team2-score team1-score team2-usernames)]})))
+                  (let [match-id ((db-utils/get-first-formatted-row (<p! (match/insert-match
+                         client map-select team1-score team2-score team1-id team2-id))) "id")]
+                    (<p! (.delete (:init-message match-info)))
+                    (reset-interaction-in-state (get-user-id interaction))
+                    (<p! (.update interaction #js {:embeds #js []
+                                                   :content "Match successfully saved!"
+                                                   :components #js []}))
+                    (<p! (.send channel
+                                #js {:content
+                                     (str "Saved by <@" (.. interaction -user -id)
+                                          "> | Match ID: " match-id)
+                                     :embeds #js [(create-map-embed map-select)
+                                        (create-team-embed team1-score team2-score team1-usernames)
+                                        (create-team-embed team2-score team1-score
+                                                           team2-usernames)]}))))
 
                 (<p! (db/commit-transaction client))
                 (catch js/Error e (do (println "ERROR handle-collector-event-button-save! gg" e)
@@ -299,8 +302,8 @@
               generated-options-maps (clj->js (generate-maps-options maps))
               pending-interaction (get-interaction-form user-id)
               channel (.. interaction -channel)
-              init-message (<p! (.send channel (str ":warning: <@" user-id "> is writing "
-                                       "the result of the match now :warning:")))]
+              init-message (<p! (.send channel (str ":red_circle: <@" user-id "> is writing "
+                                       "the result of the match now :red_circle:")))]
           (try (when pending-interaction
                  (<p! (.delete (:init-message pending-interaction)))
                  (<p! (.deleteReply (:interaction pending-interaction))))
