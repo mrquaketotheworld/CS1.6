@@ -16,7 +16,8 @@
 
 (def client (discord/Client.
                  #js {:intents #js [(.-Guilds discord/GatewayIntentBits)
-                                   (.-GuildVoiceStates discord/GatewayIntentBits)]}))
+                                   (.-GuildVoiceStates discord/GatewayIntentBits)
+                                   (.-MessageContent discord/GatewayIntentBits)]}))
 
 (def state (atom {:button-collectors {} :select-menu-collectors {} :user-select-collectors {}}))
 
