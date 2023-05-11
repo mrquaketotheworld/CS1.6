@@ -109,7 +109,7 @@
                                    player-total-wins)]
             (fill-style "black")
             (.fillRect context 0 0 (.-width canvas) (.-height canvas))
-            (global-alpha 0.22)
+            (global-alpha 0.1)
             (.drawImage context image 50 1 (.-naturalWidth image) (.-naturalHeight image))
             (global-alpha 1)
             (column-font-normal)
