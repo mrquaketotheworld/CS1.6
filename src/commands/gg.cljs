@@ -233,14 +233,11 @@
                   team2-score (js/Number (match-info "team2-score"))
                   team1-usernames (create-user-list-string (match-info "team1"))
                   team2-usernames (create-user-list-string (match-info "team2"))
-                  finish-message (str
-                                  "If the data about match is **CORRECT** "
-                                  "then click on the save button.\n"
-                                  "If the data about match is **WRONG** "
-                                  "then run `/gg` again.\n\n"
-                                  (discord/bold
-                                   (str ":warning: If you click on the save button, "
-                                "then saved result of the match cannot be changed :warning:\n\n")))
+                  finish-message  (discord/bold
+                                  (str "\n:warning:WARNING:warning:\n"
+                                       "Please check the data you entered carefully.\n"
+                                       "If you click on the save button, "
+                                 "then saved result of the match and stats cannot be changed.\n"))
                   finish-message-map (create-map-embed map-select)
                   finish-message-team1 (create-team-embed team1-score team2-score team1-usernames)
                   finish-message-team2 (create-team-embed team2-score team1-score team2-usernames)]
@@ -334,10 +331,7 @@
           (update-interaction-in-state user-id :interaction interaction)
           (update-interaction-in-state user-id :init-message init-message)
           (.apply map-select.addOptions map-select generated-options-maps)
-          (<p! (.reply interaction #js {:content (str
-                                                  "If you make a mistake filling out the form, "
-                                                  "run the `/gg` command again")
-                                    :embeds #js [embed-title]
-                                    :components #js [map-select-row button-cancel-row]
-                                    :ephemeral true})))
+          (<p! (.reply interaction #js {:embeds #js [embed-title]
+                                        :components #js [map-select-row button-cancel-row]
+                                        :ephemeral true})))
         (catch js/Error e (println "ERROR interact! gg" e))))))
