@@ -11,7 +11,6 @@
             [commands.get :as get-command]
             [commands.set :as set-command]
             [db.models.server :as server]
-            [db.init-tables :as init-tables]
             [db.models.map-server :as map-server]))
 
 (def client (discord/Client.
@@ -132,7 +131,6 @@
   (case (nth args 0)
     "register" (deploy/register-commands)
     "register-guild" (deploy/register-guild-commands)
-    "init-tables" (init-tables/init-tables)
     (println "Start")))
 
  (.on js/process "unhandledRejection"
