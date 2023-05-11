@@ -2,7 +2,7 @@
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
-            [config :refer [TOKEN GUILD_ADMIN GUILD_SCORE GUILD_CHANNEL_SCORE]]
+            [config :refer [TOKEN GUILD_ADMIN GUILD_SCORE GUILD_CHANNEL_SCORE GUILD_CHANNEL_BOT]]
             [commands.quote :as quote]
             [commands.make-teams :as make-teams]
             [commands.go :as go-command]
@@ -100,7 +100,13 @@
                                  (str "Sorry, command only works in the <#"
                                       GUILD_CHANNEL_SCORE "> channel")
                                  :ephemeral true})))
-            "get" (get-command/interact! interaction)
+            "get" (if (= channel-id GUILD_CHANNEL_BOT)
+                   (get-command/interact! interaction)
+                   (<p! (.reply interaction #js
+                                {:content
+                                 (str "Sorry, command only works in the <#"
+                                      GUILD_CHANNEL_BOT "> channel")
+                                 :ephemeral true})))
             "set" (set-command/interact! interaction))))
   (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
