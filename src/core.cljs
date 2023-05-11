@@ -24,7 +24,7 @@
   (let [command-name (.. interaction -message -interaction -commandName)]
     (case command-name
       "go"(go-command/handle-collector-event-type-button! interaction)
-      "gg"(gg/handle-collector-event-button-save! interaction))))
+      "gg"(gg/handle-collector-event-button! interaction))))
 
 (defn init-collector-type-button [interaction]
   (let [channel-id (.. interaction -channel -id)]

@@ -46,6 +46,16 @@
       (setTitle map-select)
       (setColor LIGHT-BLACK)))
 
+(defn create-button-row [custom-id label button-style]
+  (.addComponents (discord/ActionRowBuilder.)
+                  (.. (discord/ButtonBuilder.)
+                      (setCustomId custom-id)
+                      (setLabel label)
+                      (setStyle button-style))))
+
+(def button-cancel-row
+  (create-button-row "button-cancel" "Cancel" (.-Primary discord/ButtonStyle)))
+
 (defn sum-players-points [team-points]
   (reduce (fn [acc player]
             (+ acc (player "points"))) 0 team-points))
@@ -75,10 +85,12 @@
 (defn create-user-list-string [team-info]
   (apply str (interpose ", " (map #(:username %) team-info))))
 
-(defn handle-collector-event-button-save! [interaction]
+(defn handle-collector-event-button! [interaction]
   (go (try
-        (let [channel (.. interaction -channel)
-              match-info (get-interaction-form (get-user-id interaction))
+        (let [user-id (get-user-id interaction)
+              channel (.. interaction -channel)
+              custom-id (.-customId interaction)
+              match-info (get-interaction-form user-id)
               team1-usernames (create-user-list-string (match-info "team1"))
               team2-usernames (create-user-list-string (match-info "team2"))
               map-select (match-info "map-select")
@@ -91,16 +103,23 @@
               users (concat team1-users team2-users)
               server-id (.-guildId interaction)
               client (<p! (.connect db/pool))]
-          (go (try
+          (case custom-id
+            "button-cancel"
+            (do
+              (<p! (.delete (:init-message match-info)))
+              (<p! (.deleteReply (:interaction match-info)))
+              (reset-interaction-in-state user-id))
+            "button-save"
+            (go (try
                 (<p! (db/begin-transaction client))
                 (doseq [user users]
-                  (let [user-id (:user-id user)
+                  (let [user-id-iter (:user-id user)
                         username (:username user)]
-                    (<p! (player/insert-player-if-not-exists client user-id username))
+                    (<p! (player/insert-player-if-not-exists client user-id-iter username))
                     (let [player-server (.-rows (<p! (player-server-points/select-player-by-server
-                                                      client user-id server-id)))]
+                                                      client user-id-iter server-id)))]
                       (when (empty? player-server)
-                        (<p! (player-server-points/insert-player client user-id server-id))))))
+                        (<p! (player-server-points/insert-player client user-id-iter server-id))))))
                 (let [team1-points
                       (db-utils/get-formatted-rows (<p! (player-server-points/select-players-points
                                                          client (clj->js team1-ids) server-id)))
@@ -154,7 +173,7 @@
                   (let [match-id ((db-utils/get-first-formatted-row (<p! (match/insert-match
                          client map-select team1-score team2-score team1-id team2-id))) "id")]
                     (<p! (.delete (:init-message match-info)))
-                    (reset-interaction-in-state (get-user-id interaction))
+                    (reset-interaction-in-state user-id)
                     (<p! (.update interaction #js {:embeds #js []
                                                    :content "Match successfully saved!"
                                                    :components #js []}))
@@ -168,10 +187,10 @@
                                                            team2-usernames)]}))))
 
                 (<p! (db/commit-transaction client))
-                (catch js/Error e (do (println "ERROR handle-collector-event-button-save! gg" e)
+                (catch js/Error e (do (println "ERROR handle-collector-event-button! gg" e)
                                       (<p! (db/rollback-transaction client))))
-                (finally (.release client)))))
-        (catch js/Error e (println "ERROR handle-collector-event-button-save! gg" e)))))
+                (finally (.release client))))))
+        (catch js/Error e (println "ERROR handle-collector-event-button! gg" e)))))
 
 (defn handle-collector-event-select-menu! [interaction]
   (let [user-id (get-user-id interaction)
@@ -189,11 +208,7 @@
                                       (setPlaceholder "Team 2")
                                       (setMinValues TEAM-NUMBER)
                                       (setMaxValues TEAM-NUMBER)))
-        button-save-row (.addComponents (discord/ActionRowBuilder.)
-                                        (.. (discord/ButtonBuilder.)
-                                            (setCustomId "button-save")
-                                            (setLabel "Save")
-                                            (setStyle (.-Danger discord/ButtonStyle))))
+        button-save-row (create-button-row "button-save" "Save" (.-Danger discord/ButtonStyle))
         embed-title-who-team1 (.. (discord/EmbedBuilder.)
                                   (setTitle "Who played for Team 1?")
                                   (setColor CYAN))
@@ -205,7 +220,7 @@
           (case custom-id
             "team1-score"
             (<p! (.update interaction #js {:embeds #js [embed-title-who-team2]
-                                           :components #js [team2-row]}))
+                                           :components #js [team2-row button-cancel-row]}))
             "team2-score"
             (let [match-info (get-interaction-form user-id)
                   map-select (match-info "map-select")
@@ -228,10 +243,10 @@
                                              :embeds #js [finish-message-map
                                                           finish-message-team1
                                                           finish-message-team2]
-                                             :components #js [button-save-row]})))
+                                             :components #js [button-cancel-row button-save-row]})))
             "map-select"
             (<p! (.update interaction #js {:embeds #js [embed-title-who-team1]
-                                           :components #js [team1-row]})))
+                                           :components #js [team1-row button-cancel-row]})))
           (catch js/Error e (println "ERROR handle-collector-event-select-menu! gg" e))))))
 
 (defn handle-collector-event-user-select! [interaction]
@@ -240,7 +255,7 @@
         users (reduce (fn [acc user-item]
                         (let [user-id (first user-item)
                               user (second user-item)]
-                          (if (.-bot user)
+                          (if nil ; TODO
                             acc
                             (conj acc {:user-id user-id
                                        :username (.-username user)}))))
@@ -277,13 +292,13 @@
                       team2-users-set (set (map #(:user-id %) team2-match-info))]
                   (if (= (count (clojure.set/intersection team1-users-set team2-users-set)) 0)
                     (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team2]
-                                                   :components #js [team2-score-row]}))
+                                                   :components #js [team2-score-row button-cancel-row]}))
                     (<p! (.reply interaction #js {:content
                                              "One player cannot play on two teams at the same time"
                                                   :ephemeral true}))))
                 "team1"
                 (<p! (.update interaction #js {:embeds #js [embed-title-what-score-team1]
-                                               :components #js [team1-score-row]})))))
+                                               :components #js [team1-score-row button-cancel-row]})))))
           (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e))))))
 
 (defn interact! [interaction]
@@ -315,6 +330,6 @@
           (<p! (.reply interaction #js {:content (str "If you make a mistake filling out the form, "
                                                   "run the `/gg` command again")
                                     :embeds #js [embed-title]
-                                    :components #js [map-select-row]
+                                    :components #js [map-select-row button-cancel-row]
                                     :ephemeral true})))
         (catch js/Error e (println "ERROR interact! gg" e))))))
