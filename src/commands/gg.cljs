@@ -122,152 +122,159 @@
 
 (defn is-user-owner-of-this [interaction]
   (when-let [interaction-form (get-interaction-form (get-user-id interaction))]
-       (= (.. interaction -message -interaction -id) (.-id (:interaction interaction-form)))))
+    (= (.. interaction -message -interaction -id) (.-id (:interaction interaction-form)))))
 
 (defn reply-wrong-interaction [interaction]
   (.catch (.reply interaction #js {:content "Oops...this is not your form" :ephemeral true})
-         #(println "ERROR reply-wrong-interaction gg" %)))
+          #(println "ERROR reply-wrong-interaction gg" %)))
 
 (defn handle-collector-event-button! [interaction]
   (if (is-user-owner-of-this interaction)
-(go (try
-        (let [user-id (get-user-id interaction)
-              custom-id (.-customId interaction)
-              match-info (get-interaction-form user-id)
-              team1-usernames (create-user-list-string (match-info "team1"))
-              team2-usernames (create-user-list-string (match-info "team2"))
-              map-select (match-info "map-select")
-              team1-score (js/Number (match-info "team1-score"))
-              team2-score (js/Number (match-info "team2-score"))
-              team1-users (get-users (match-info "team1"))
-              team2-users (get-users (match-info "team2"))
-              team1-ids (map #(:user-id %) team1-users)
-              team2-ids (map #(:user-id %) team2-users)
-              users (concat team1-users team2-users)
-              server-id (.-guildId interaction)
-              client (<p! (.connect db/pool))]
-          (case custom-id
-            "button-cancel"
-            (do
-              (<p! (.deleteReply (:interaction match-info)))
-              (reset-interaction-in-state user-id))
-            "button-save"
-            (go (try
-                (<p! (db/begin-transaction client))
-                (doseq [user users]
-                  (let [user-id-iter (:user-id user)
-                        username (:username user)]
-                    (<p! (player/insert-player-if-not-exists client user-id-iter username))
-                    (let [player-server (.-rows (<p! (player-server-points/select-player-by-server
-                                                      client user-id-iter server-id)))]
-                      (when (empty? player-server)
-                        (<p! (player-server-points/insert-player
-                               client user-id-iter server-id))))))
-                (let [team1-points
-                      (db-utils/get-formatted-rows (<p! (player-server-points/select-players-points
-                                                         client (clj->js team1-ids) server-id)))
-                      team2-points
-                      (db-utils/get-formatted-rows (<p! (player-server-points/select-players-points
-                                                         client (clj->js team2-ids) server-id)))
-                      team1-total-points (sum-players-points team1-points)
-                      team2-total-points (sum-players-points team2-points)
-                      elo-K-factor 160
-                      elo-basic (.. (elo/Elo. elo-K-factor)
-                                    (playerA team1-total-points)
-                                    (playerB team2-total-points))
-                      elo-result (.. (cond
-                                       (> team1-score team2-score) (.setWinnerA elo-basic)
-                                       (< team1-score team2-score) (.setWinnerB elo-basic)
-                                       :else (.setDraw elo-basic))
-                                     calculate
-                                     getResults)
-                      team1-points-elo-diff (- (first elo-result) team1-total-points)
-                      team2-points-elo-diff (- (second elo-result) team2-total-points)
-                      team1-points-to-every-player
-                      (calculate-points-for-one-player team1-points-elo-diff team1-users)
-                      team2-points-to-every-player
-                      (calculate-points-for-one-player team2-points-elo-diff team2-users)
-                      team1-id ((db-utils/get-first-formatted-row
-                                 (<p! (team/insert-generate-team-id client))) "id")
-                      team2-id ((db-utils/get-first-formatted-row
-                                 (<p! (team/insert-generate-team-id client))) "id")]
-                  (doseq [team1-player-id team1-ids]
-                    (<p! (player-server-points/update-player-points
-                          client team1-player-id server-id team1-points-to-every-player)))
-                  (doseq [team2-player-id team2-ids]
-                    (<p! (player-server-points/update-player-points
-                          client team2-player-id server-id team2-points-to-every-player)))
-                  (<p! (player-team-server/insert-team client
-                                                       (nth team1-ids 0)
-                                                       (nth team1-ids 1)
-                                                       (nth team1-ids 2)
-                                                       (nth team1-ids 3)
-                                                       (nth team1-ids 4)
-                                                       team1-id
-                                                       server-id))
-                  (<p! (player-team-server/insert-team client
-                                                       (nth team2-ids 0)
-                                                       (nth team2-ids 1)
-                                                       (nth team2-ids 2)
-                                                       (nth team2-ids 3)
-                                                       (nth team2-ids 4)
-                                                       team2-id
-                                                       server-id))
-                  (let [match-id ((db-utils/get-first-formatted-row (<p! (match/insert-match
-                         client map-select team1-score team2-score team1-id team2-id))) "id")]
-                    (reset-interaction-in-state user-id)
-                    (<p! (.update interaction
-                                #js {:content (str "Match ID: " match-id)
-                                     :embeds #js [(create-map-embed map-select)
-                                        (create-team-embed team1-score team2-score team1-usernames)
-                                        (create-team-embed team2-score team1-score
-                                                           team2-usernames)]
-                                     :components #js []}))))
+    (go (try
+          (let [user-id (get-user-id interaction)
+                custom-id (.-customId interaction)
+                match-info (get-interaction-form user-id)
+                team1-usernames (create-user-list-string (match-info "team1"))
+                team2-usernames (create-user-list-string (match-info "team2"))
+                map-select (match-info "map-select")
+                team1-score (js/Number (match-info "team1-score"))
+                team2-score (js/Number (match-info "team2-score"))
+                team1-users (get-users (match-info "team1"))
+                team2-users (get-users (match-info "team2"))
+                team1-ids (map #(:user-id %) team1-users)
+                team2-ids (map #(:user-id %) team2-users)
+                users (concat team1-users team2-users)
+                server-id (.-guildId interaction)
+                client (<p! (.connect db/pool))]
+            (case custom-id
+              "button-cancel"
+              (do
+                (<p! (.deleteReply (:interaction match-info)))
+                (reset-interaction-in-state user-id))
+              "button-save"
+              (go (try
+                    (<p! (db/begin-transaction client))
+                    (doseq [user users]
+                      (let [user-id-iter (:user-id user)
+                            username (:username user)]
+                        (<p! (player/insert-player-if-not-exists client user-id-iter username))
+                        (let [player-server (.-rows (<p!
+                                                      (player-server-points/select-player-by-server
+                                                          client user-id-iter server-id)))]
+                          (when (empty? player-server)
+                            (<p! (player-server-points/insert-player
+                                  client user-id-iter server-id))))))
+                    (let [team1-points
+                          (db-utils/get-formatted-rows
+                            (<p! (player-server-points/select-players-points
+                                   client (clj->js team1-ids) server-id)))
+                          team2-points
+                          (db-utils/get-formatted-rows
+                            (<p! (player-server-points/select-players-points
+                                   client (clj->js team2-ids) server-id)))
+                          team1-total-points (sum-players-points team1-points)
+                          team2-total-points (sum-players-points team2-points)
+                          elo-K-factor 160
+                          elo-basic (.. (elo/Elo. elo-K-factor)
+                                        (playerA team1-total-points)
+                                        (playerB team2-total-points))
+                          elo-result (.. (cond
+                                           (> team1-score team2-score) (.setWinnerA elo-basic)
+                                           (< team1-score team2-score) (.setWinnerB elo-basic)
+                                           :else (.setDraw elo-basic))
+                                         calculate
+                                         getResults)
+                          team1-points-elo-diff (- (first elo-result) team1-total-points)
+                          team2-points-elo-diff (- (second elo-result) team2-total-points)
+                          team1-points-to-every-player
+                          (calculate-points-for-one-player team1-points-elo-diff team1-users)
+                          team2-points-to-every-player
+                          (calculate-points-for-one-player team2-points-elo-diff team2-users)
+                          team1-id ((db-utils/get-first-formatted-row
+                                     (<p! (team/insert-generate-team-id client))) "id")
+                          team2-id ((db-utils/get-first-formatted-row
+                                     (<p! (team/insert-generate-team-id client))) "id")]
+                      (doseq [team1-player-id team1-ids]
+                        (<p! (player-server-points/update-player-points
+                              client team1-player-id server-id team1-points-to-every-player)))
+                      (doseq [team2-player-id team2-ids]
+                        (<p! (player-server-points/update-player-points
+                              client team2-player-id server-id team2-points-to-every-player)))
+                      (<p! (player-team-server/insert-team client
+                                                           (nth team1-ids 0)
+                                                           (nth team1-ids 1)
+                                                           (nth team1-ids 2)
+                                                           (nth team1-ids 3)
+                                                           (nth team1-ids 4)
+                                                           team1-id
+                                                           server-id))
+                      (<p! (player-team-server/insert-team client
+                                                           (nth team2-ids 0)
+                                                           (nth team2-ids 1)
+                                                           (nth team2-ids 2)
+                                                           (nth team2-ids 3)
+                                                           (nth team2-ids 4)
+                                                           team2-id
+                                                           server-id))
+                      (let [match-id ((db-utils/get-first-formatted-row
+                                        (<p! (match/insert-match client map-select team1-score
+                                                       team2-score team1-id team2-id))) "id")]
+                        (reset-interaction-in-state user-id)
+                        (<p! (.update interaction
+                                      #js {:content (str "Match ID: " match-id)
+                                           :embeds #js [(create-map-embed map-select)
+                                                        (create-team-embed team1-score team2-score
+                                                                           team1-usernames)
+                                                        (create-team-embed team2-score team1-score
+                                                                           team2-usernames)]
+                                           :components #js []}))))
 
-                (<p! (db/commit-transaction client))
-                (catch js/Error e (do (println "ERROR handle-collector-event-button! gg" e)
-                                      (<p! (db/rollback-transaction client))))
-                (finally (.release client))))))
-        (catch js/Error e (println "ERROR handle-collector-event-button! gg" e))))
-(reply-wrong-interaction interaction)))
+                    (<p! (db/commit-transaction client))
+                    (catch js/Error e (do (println "ERROR handle-collector-event-button! gg" e)
+                                          (<p! (db/rollback-transaction client))))
+                    (finally (.release client))))))
+          (catch js/Error e (println "ERROR handle-collector-event-button! gg" e))))
+    (reply-wrong-interaction interaction)))
 
 (defn handle-collector-event-select-menu! [interaction]
   (if (is-user-owner-of-this interaction)
-(let [user-id (get-user-id interaction)
-        custom-id (.-customId interaction)
-        value (first (.-values interaction))
-        embed-title-who-team1 (create-embed-question "Who played for Team 1?")
-        embed-title-who-team2 (create-embed-question "Who played for Team 2?")]
-    (go (try
-          (update-interaction-in-state user-id custom-id value)
-          (case custom-id
-            "team1-score"
-            (<p! (.update interaction #js {:embeds #js [embed-title-who-team2]
-                                           :components #js [team2-row button-cancel-row]}))
-            "team2-score"
-            (let [match-info (get-interaction-form user-id)
-                  map-select (match-info "map-select")
-                  team1-score (js/Number (match-info "team1-score"))
-                  team2-score (js/Number (match-info "team2-score"))
-                  team1-usernames (create-user-list-string (match-info "team1"))
-                  team2-usernames (create-user-list-string (match-info "team2"))
-                  finish-message  (discord/bold
-                                  (str "\n:warning:WARNING:warning:\n"
-                                       "Please check the data you entered carefully.\n"
-                                       "If you click on the save button, "
-                                 "then saved result of the match and stats cannot be changed.\n"))
-                  finish-message-map (create-map-embed map-select)
-                  finish-message-team1 (create-team-embed team1-score team2-score team1-usernames)
-                  finish-message-team2 (create-team-embed team2-score team1-score team2-usernames)]
-              (<p! (.update interaction #js {:content finish-message
-                                             :embeds #js [finish-message-map
-                                                          finish-message-team1
-                                                          finish-message-team2]
-                                            :components #js [button-cancel-save-row]})))
-            "map-select"
-            (<p! (.update interaction #js {:embeds #js [embed-title-who-team1]
-                                           :components #js [team1-row button-cancel-row]})))
-          (catch js/Error e (println "ERROR handle-collector-event-select-menu! gg" e)))))
+    (let [user-id (get-user-id interaction)
+          custom-id (.-customId interaction)
+          value (first (.-values interaction))
+          embed-title-who-team1 (create-embed-question "Who played for Team 1?")
+          embed-title-who-team2 (create-embed-question "Who played for Team 2?")]
+      (go (try
+            (update-interaction-in-state user-id custom-id value)
+            (case custom-id
+              "team1-score"
+              (<p! (.update interaction #js {:embeds #js [embed-title-who-team2]
+                                             :components #js [team2-row button-cancel-row]}))
+              "team2-score"
+              (let [match-info (get-interaction-form user-id)
+                    map-select (match-info "map-select")
+                    team1-score (js/Number (match-info "team1-score"))
+                    team2-score (js/Number (match-info "team2-score"))
+                    team1-usernames (create-user-list-string (match-info "team1"))
+                    team2-usernames (create-user-list-string (match-info "team2"))
+                    finish-message  (discord/bold
+                                     (str "\n:warning:WARNING:warning:\n"
+                                          "Please check the data you entered carefully.\n"
+                                          "If you click on the save button, "
+                                  "then saved result of the match and stats cannot be changed.\n"))
+                    finish-message-map (create-map-embed map-select)
+                    finish-message-team1 (create-team-embed team1-score team2-score
+                                                            team1-usernames)
+                    finish-message-team2 (create-team-embed team2-score team1-score
+                                                            team2-usernames)]
+                (<p! (.update interaction #js {:content finish-message
+                                               :embeds #js [finish-message-map
+                                                            finish-message-team1
+                                                            finish-message-team2]
+                                               :components #js [button-cancel-save-row]})))
+              "map-select"
+              (<p! (.update interaction #js {:embeds #js [embed-title-who-team1]
+                                             :components #js [team1-row button-cancel-row]})))
+            (catch js/Error e (println "ERROR handle-collector-event-select-menu! gg" e)))))
     (reply-wrong-interaction interaction)))
 
 (defn handle-collector-event-user-select! [interaction]
@@ -301,15 +308,16 @@
                         team2-users-set (set (map #(:user-id %) team2-match-info))]
                     (if (= (count (clojure.set/intersection team1-users-set team2-users-set)) 0)
                       (<p! (.update interaction #js
-                                    {:embeds #js [embed-title-what-score-team2]
-                                     :components #js [team2-score-row button-cancel-row]}))
-                      (<p! (.reply interaction #js {:content
-                                            "One player cannot play on two teams at the same time"
-                                                    :ephemeral true}))))
+                                                 {:embeds #js [embed-title-what-score-team2]
+                                                  :components #js [team2-score-row
+                                                                   button-cancel-row]}))
+                      (<p! (.reply interaction #js
+                                   {:content "One player cannot play on two teams at the same time"
+                                    :ephemeral true}))))
                   "team1"
-                  (<p! (.update interaction #js
-                                {:embeds #js [embed-title-what-score-team1]
-                                 :components #js [team1-score-row button-cancel-row]})))))
+                  (<p! (.update interaction
+                                #js {:embeds #js [embed-title-what-score-team1]
+                                     :components #js [team1-score-row button-cancel-row]})))))
             (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e)))))
     (reply-wrong-interaction interaction)))
 
