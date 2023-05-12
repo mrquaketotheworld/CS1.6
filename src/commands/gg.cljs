@@ -125,7 +125,8 @@
        (= (.. interaction -message -interaction -id) (.-id (:interaction interaction-form)))))
 
 (defn reply-wrong-interaction [interaction]
-  (.reply interaction #js {:content "Oops...this is not your form" :ephemeral true}))
+  (.catch (.reply interaction #js {:content "Oops...this is not your form" :ephemeral true})
+         #(println "ERROR reply-wrong-interaction gg" %)))
 
 (defn handle-collector-event-button! [interaction]
   (if (is-user-owner-of-this interaction)
