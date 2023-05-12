@@ -110,10 +110,19 @@
 (def team1-row (create-row (create-user-select "team1" "Team 1")))
 (def team2-row (create-row (create-user-select "team2" "Team 2")))
 
+(defn get-only-user [interaction]
+  (reduce (fn [acc user-item]
+            (let [user-id (first user-item)
+                  user (second user-item)]
+              (if (.-bot user)
+                acc
+                (conj acc {:user-id user-id
+                           :username (.-username user)}))))
+          [] (.from js/Array (.-users interaction))))
+
 (defn handle-collector-event-button! [interaction]
   (go (try
         (let [user-id (get-user-id interaction)
-              channel (.. interaction -channel)
               custom-id (.-customId interaction)
               match-info (get-interaction-form user-id)
               team1-usernames (create-user-list-string (match-info "team1"))
@@ -257,14 +266,7 @@
 (defn handle-collector-event-user-select! [interaction]
   (let [user-id (get-user-id interaction)
         custom-id (.-customId interaction)
-        users (reduce (fn [acc user-item]
-                        (let [user-id (first user-item)
-                              user (second user-item)]
-                          (if nil
-                            acc
-                            (conj acc {:user-id user-id
-                                       :username (.-username user)}))))
-                      [] (.from js/Array (.-users interaction)))
+        users (get-only-user interaction)
         team1-score-string-select (create-string-select "team1-score" "Team 1 Score")
         team2-score-string-select (create-string-select "team2-score" "Team 2 Score")
         embed-title-what-score-team1 (create-embed-question "What is the score of Team 1?")
