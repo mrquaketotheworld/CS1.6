@@ -110,7 +110,7 @@
     "CREATE TABLE IF NOT EXISTS player_server_points (
       player_id VARCHAR(255) NOT NULL REFERENCES player(player_id),
       server_id VARCHAR(255) NOT NULL REFERENCES server(server_id),
-      points DOUBLE PRECISION DEFAULT 128 NOT NULL,
+      points DOUBLE PRECISION DEFAULT 128 NOT NULL CHECK (points >= 0),
       created_at timestamptz DEFAULT NOW() NOT NULL,
       PRIMARY KEY (player_id, server_id)
     )"))
@@ -343,25 +343,46 @@
       ('Professional', 32768),
       ('Nanaxer', 65536)"))
 
+(defn add-valid-points-constraint [] ; TODO temp
+  (query "ALTER TABLE player_server_points
+         ADD CONSTRAINT valid_points
+         CHECK (points >= 0)"))
+
+(defn add-update-player-points-procedure []
+  (query
+    "CREATE OR REPLACE PROCEDURE
+    update_player_points(points_arg double precision, player_id_arg text, server_id_arg text)
+    language plpgsql
+    as $$
+    BEGIN
+      UPDATE player_server_points SET points = points + points_arg
+      WHERE player_id = player_id_arg AND server_id = server_id_arg;
+    EXCEPTION WHEN check_violation THEN
+      UPDATE player_server_points SET points = 0
+      WHERE player_id = player_id_arg AND server_id = server_id_arg;
+    END;$$"))
+
 (defn init-tables []
   (println 'INIT-TABLES)
   (go (try
-        (<p! (create-team))
-        (<p! (create-server))
-        (<p! (create-rank))
-        (<p! (create-author))
-        (<p! (create-map))
-        (<p! (create-maptype))
-        (<p! (create-player))
-        (<p! (add-player-trigger))
-        (<p! (create-quote))
-        (<p! (create-match))
-        (<p! (create-map-server))
-        (<p! (create-player-server-points))
-        (<p! (create-player-team-server))
-        (<p! (insert-author))
-        (<p! (insert-map))
-        (<p! (insert-maptype))
-        (<p! (insert-quote))
-        (<p! (insert-rank))
+        (<p! (add-valid-points-constraint))
+        (<p! (add-update-player-points-procedure))
+        ;(<p! (create-team))
+        ;(<p! (create-server))
+        ;(<p! (create-rank))
+        ;(<p! (create-author))
+        ;(<p! (create-map))
+        ;(<p! (create-maptype))
+        ;(<p! (create-player))
+        ;(<p! (add-player-trigger))
+        ;(<p! (create-quote))
+        ;(<p! (create-match))
+        ;(<p! (create-map-server))
+        ;(<p! (create-player-server-points))
+        ;(<p! (create-player-team-server))
+        ;(<p! (insert-author))
+        ;(<p! (insert-map))
+        ;(<p! (insert-maptype))
+        ;(<p! (insert-quote))
+        ;(<p! (insert-rank))
         (catch js/Error e (println "ERROR init-tables" e)))))

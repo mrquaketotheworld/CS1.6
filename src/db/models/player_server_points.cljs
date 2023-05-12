@@ -25,8 +25,6 @@
     #js [player-id server-id]))
 
 (defn update-player-points [client player-id server-id points]
-  (.query client
-  "UPDATE player_server_points SET points = points + $1 WHERE player_id = $2 AND server_id = $3"
-    #js [points player-id server-id]))
+  (.query client "call update_player_points($1, $2, $3)" #js [points player-id server-id]))
 
 
