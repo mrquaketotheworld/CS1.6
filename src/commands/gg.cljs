@@ -97,6 +97,11 @@
       (setMinValues TEAM-NUMBER)
       (setMaxValues TEAM-NUMBER)))
 
+(defn create-string-select [custom-id placeholder]
+  (.. (discord/StringSelectMenuBuilder.)
+      (setCustomId custom-id)
+      (setPlaceholder placeholder)))
+
 (def team1-row (create-row (create-user-select "team1" "Team 1")))
 (def team2-row (create-row (create-user-select "team2" "Team 2")))
 
@@ -263,28 +268,26 @@
                             (conj acc {:user-id user-id
                                        :username (.-username user)}))))
                       [] (.from js/Array (.-users interaction)))
-        team1-score (.. (discord/StringSelectMenuBuilder.)
-                        (setCustomId "team1-score")
-                        (setPlaceholder "Team 1 Score"))
-        team2-score (.. (discord/StringSelectMenuBuilder.)
-                        (setCustomId "team2-score")
-                        (setPlaceholder "Team 2 Score"))
+        team1-score-string-select (create-string-select "team1-score" "Team 1 Score")
+        team2-score-string-select (create-string-select "team2-score" "Team 2 Score")
         embed-title-what-score-team1 (.. (discord/EmbedBuilder.)
                                          (setTitle "What is the score of Team 1?")
                                          (setColor CYAN))
         embed-title-what-score-team2 (.. (discord/EmbedBuilder.)
                                          (setTitle "What is the score of Team 2?")
                                          (setColor CYAN))
-        team1-score-row (.addComponents (discord/ActionRowBuilder.) team1-score)
-        team2-score-row (.addComponents (discord/ActionRowBuilder.) team2-score)
+        team1-score-row (.addComponents (discord/ActionRowBuilder.) team1-score-string-select)
+        team2-score-row (.addComponents (discord/ActionRowBuilder.) team2-score-string-select)
         generated-options (clj->js (generate-score-options))]
     (go (try
           (if (< (count users) TEAM-NUMBER)
             (<p! (.reply interaction #js {:content "Only user data can be saved, not bots"
                                           :ephemeral true}))
             (do
-              (.apply team1-score.addOptions team1-score generated-options)
-              (.apply team2-score.addOptions team2-score generated-options)
+              (.apply team1-score-string-select.addOptions team1-score-string-select
+                      generated-options)
+              (.apply team2-score-string-select.addOptions team2-score-string-select
+                      generated-options)
               (update-interaction-in-state user-id custom-id users)
               (case custom-id
                 "team2"
