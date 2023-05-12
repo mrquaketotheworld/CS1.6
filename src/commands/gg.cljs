@@ -125,7 +125,8 @@
        (= (.. interaction -message -interaction -id) (.-id (:interaction interaction-form)))))
 
 (defn handle-collector-event-button! [interaction]
-  (go (try
+  (when (is-user-owner-of-this interaction)
+(go (try
         (let [user-id (get-user-id interaction)
               custom-id (.-customId interaction)
               match-info (get-interaction-form user-id)
@@ -223,7 +224,7 @@
                 (catch js/Error e (do (println "ERROR handle-collector-event-button! gg" e)
                                       (<p! (db/rollback-transaction client))))
                 (finally (.release client))))))
-        (catch js/Error e (println "ERROR handle-collector-event-button! gg" e)))))
+        (catch js/Error e (println "ERROR handle-collector-event-button! gg" e))))))
 
 (defn handle-collector-event-select-menu! [interaction]
   (when (is-user-owner-of-this interaction)
