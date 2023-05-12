@@ -264,45 +264,46 @@
           (catch js/Error e (println "ERROR handle-collector-event-select-menu! gg" e)))))))
 
 (defn handle-collector-event-user-select! [interaction]
-  (let [user-id (get-user-id interaction)
-        custom-id (.-customId interaction)
-        users (get-only-users interaction)
-        team1-score-string-select (create-string-select "team1-score" "Team 1 Score")
-        team2-score-string-select (create-string-select "team2-score" "Team 2 Score")
-        embed-title-what-score-team1 (create-embed-question "What is the score of Team 1?")
-        embed-title-what-score-team2 (create-embed-question "What is the score of Team 2?")
-        team1-score-row (create-row team1-score-string-select)
-        team2-score-row (create-row team2-score-string-select)
-        generated-options (clj->js (generate-score-options))]
-    (go (try
-          (if (< (count users) TEAM-NUMBER)
-            (<p! (.reply interaction #js {:content "Only user data can be saved, not bots"
-                                          :ephemeral true}))
-            (do
-              (.apply team1-score-string-select.addOptions team1-score-string-select
-                      generated-options)
-              (.apply team2-score-string-select.addOptions team2-score-string-select
-                      generated-options)
-              (update-interaction-in-state user-id custom-id users)
-              (case custom-id
-                "team2"
-                (let [match-info (get-interaction-form user-id)
-                      team1-match-info (match-info "team1")
-                      team2-match-info (match-info "team2")
-                      team1-users-set (set (map #(:user-id %) team1-match-info))
-                      team2-users-set (set (map #(:user-id %) team2-match-info))]
-                  (if (= (count (clojure.set/intersection team1-users-set team2-users-set)) 0)
-                    (<p! (.update interaction #js
-                                  {:embeds #js [embed-title-what-score-team2]
-                                   :components #js [team2-score-row button-cancel-row]}))
-                    (<p! (.reply interaction #js {:content
-                                             "One player cannot play on two teams at the same time"
-                                                  :ephemeral true}))))
-                "team1"
-                (<p! (.update interaction #js
-                              {:embeds #js [embed-title-what-score-team1]
-                               :components #js [team1-score-row button-cancel-row]})))))
-          (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e))))))
+  (when (is-user-owner-of-this interaction)
+    (let [user-id (get-user-id interaction)
+          custom-id (.-customId interaction)
+          users (get-only-users interaction)
+          team1-score-string-select (create-string-select "team1-score" "Team 1 Score")
+          team2-score-string-select (create-string-select "team2-score" "Team 2 Score")
+          embed-title-what-score-team1 (create-embed-question "What is the score of Team 1?")
+          embed-title-what-score-team2 (create-embed-question "What is the score of Team 2?")
+          team1-score-row (create-row team1-score-string-select)
+          team2-score-row (create-row team2-score-string-select)
+          generated-options (clj->js (generate-score-options))]
+      (go (try
+            (if (< (count users) TEAM-NUMBER)
+              (<p! (.reply interaction #js {:content "Only user data can be saved, not bots"
+                                            :ephemeral true}))
+              (do
+                (.apply team1-score-string-select.addOptions team1-score-string-select
+                        generated-options)
+                (.apply team2-score-string-select.addOptions team2-score-string-select
+                        generated-options)
+                (update-interaction-in-state user-id custom-id users)
+                (case custom-id
+                  "team2"
+                  (let [match-info (get-interaction-form user-id)
+                        team1-match-info (match-info "team1")
+                        team2-match-info (match-info "team2")
+                        team1-users-set (set (map #(:user-id %) team1-match-info))
+                        team2-users-set (set (map #(:user-id %) team2-match-info))]
+                    (if (= (count (clojure.set/intersection team1-users-set team2-users-set)) 0)
+                      (<p! (.update interaction #js
+                                    {:embeds #js [embed-title-what-score-team2]
+                                     :components #js [team2-score-row button-cancel-row]}))
+                      (<p! (.reply interaction #js {:content
+                                            "One player cannot play on two teams at the same time"
+                                                    :ephemeral true}))))
+                  "team1"
+                  (<p! (.update interaction #js
+                                {:embeds #js [embed-title-what-score-team1]
+                                 :components #js [team1-score-row button-cancel-row]})))))
+            (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e)))))))
 
 (defn interact! [interaction]
   (let [user-id (get-user-id interaction)
