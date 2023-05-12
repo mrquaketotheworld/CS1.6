@@ -269,12 +269,12 @@
                             (conj acc {:user-id user-id
                                        :username (.-username user)}))))
                       [] (.from js/Array (.-users interaction)))
-        team1-score-string-select (create-string-select "team1-score" "Team 1 Score") ; TODO move to local
+        team1-score-string-select (create-string-select "team1-score" "Team 1 Score")
         team2-score-string-select (create-string-select "team2-score" "Team 2 Score")
         embed-title-what-score-team1 (create-embed-question "What is the score of Team 1?")
         embed-title-what-score-team2 (create-embed-question "What is the score of Team 2?")
-        team1-score-row (.addComponents (discord/ActionRowBuilder.) team1-score-string-select)
-        team2-score-row (.addComponents (discord/ActionRowBuilder.) team2-score-string-select)
+        team1-score-row (create-row team1-score-string-select)
+        team2-score-row (create-row team2-score-string-select)
         generated-options (clj->js (generate-score-options))]
     (go (try
           (if (< (count users) TEAM-NUMBER)
