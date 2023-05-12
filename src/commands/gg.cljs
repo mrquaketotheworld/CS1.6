@@ -33,18 +33,23 @@
 (defn correct-score-space [score]
   (if (> (count (str score)) 1) "   " "     "))
 
-(defn create-team-embed [main-team-score opponent-teams-score main-team-usernames]
+(defn create-embed [title color]
   (.. (discord/EmbedBuilder.)
-      (setTitle (str main-team-score (correct-score-space main-team-score) main-team-usernames))
-      (setColor (cond
+      (setTitle title)
+      (setColor color)))
+
+(defn create-embed-question [title]
+  (create-embed title CYAN))
+
+(defn create-team-embed [main-team-score opponent-teams-score main-team-usernames]
+  (create-embed (str main-team-score (correct-score-space main-team-score) main-team-usernames)
+                (cond
                   (< main-team-score opponent-teams-score) RED
                   (> main-team-score opponent-teams-score) GREEN
-                  :else WHITE))))
+                  :else WHITE)))
 
 (defn create-map-embed [map-select]
-  (.. (discord/EmbedBuilder.)
-      (setTitle map-select)
-      (setColor LIGHT-BLACK)))
+  (create-embed map-select LIGHT-BLACK))
 
 (defn create-button [custom-id label button-style]
   (.. (discord/ButtonBuilder.)
@@ -215,12 +220,8 @@
   (let [user-id (get-user-id interaction)
         custom-id (.-customId interaction)
         value (first (.-values interaction))
-        embed-title-who-team1 (.. (discord/EmbedBuilder.)
-                                  (setTitle "Who played for Team 1?")
-                                  (setColor CYAN))
-        embed-title-who-team2 (.. (discord/EmbedBuilder.)
-                                  (setTitle "Who played for Team 2?")
-                                  (setColor CYAN))]
+        embed-title-who-team1 (create-embed-question "Who played for Team 1?")
+        embed-title-who-team2 (create-embed-question "Who played for Team 2?")]
     (when-let [interaction-form (get-interaction-form user-id)] ; TODO
       (when (= (.. interaction -message -interaction -id) (.-id (:interaction interaction-form)))
         (println 'YOUAREHOME)
@@ -268,14 +269,10 @@
                             (conj acc {:user-id user-id
                                        :username (.-username user)}))))
                       [] (.from js/Array (.-users interaction)))
-        team1-score-string-select (create-string-select "team1-score" "Team 1 Score")
+        team1-score-string-select (create-string-select "team1-score" "Team 1 Score") ; TODO move to local
         team2-score-string-select (create-string-select "team2-score" "Team 2 Score")
-        embed-title-what-score-team1 (.. (discord/EmbedBuilder.)
-                                         (setTitle "What is the score of Team 1?")
-                                         (setColor CYAN))
-        embed-title-what-score-team2 (.. (discord/EmbedBuilder.)
-                                         (setTitle "What is the score of Team 2?")
-                                         (setColor CYAN))
+        embed-title-what-score-team1 (create-embed-question "What is the score of Team 1?")
+        embed-title-what-score-team2 (create-embed-question "What is the score of Team 2?")
         team1-score-row (.addComponents (discord/ActionRowBuilder.) team1-score-string-select)
         team2-score-row (.addComponents (discord/ActionRowBuilder.) team2-score-string-select)
         generated-options (clj->js (generate-score-options))]
@@ -311,13 +308,9 @@
 
 (defn interact! [interaction]
   (let [user-id (get-user-id interaction)
-        map-select (.. (discord/StringSelectMenuBuilder.)
-                       (setCustomId "map-select")
-                       (setPlaceholder "Map"))
-        map-select-row (.addComponents (discord/ActionRowBuilder.) map-select)
-        embed-title (.. (discord/EmbedBuilder.)
-                        (setTitle "What map did you play?")
-                        (setColor CYAN))]
+        map-select (create-string-select "map-select" "Map")
+        map-select-row (create-row map-select)
+        embed-title (create-embed-question "What map did you play?")]
     (go
       (try
         (let [maps (db-utils/get-formatted-rows
