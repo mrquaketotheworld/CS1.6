@@ -90,6 +90,16 @@
 (defn create-user-list-string [team-info]
   (apply str (interpose ", " (map #(:username %) team-info))))
 
+(defn create-user-select [custom-id placeholder]
+  (.. (discord/UserSelectMenuBuilder.)
+      (setCustomId custom-id)
+      (setPlaceholder placeholder)
+      (setMinValues TEAM-NUMBER)
+      (setMaxValues TEAM-NUMBER)))
+
+(def team1-row (create-row (create-user-select "team1" "Team 1")))
+(def team2-row (create-row (create-user-select "team2" "Team 2")))
+
 (defn handle-collector-event-button! [interaction]
   (go (try
         (let [user-id (get-user-id interaction)
@@ -200,18 +210,6 @@
   (let [user-id (get-user-id interaction)
         custom-id (.-customId interaction)
         value (first (.-values interaction))
-        team1-row (.addComponents (discord/ActionRowBuilder.)
-                                  (.. (discord/UserSelectMenuBuilder.)
-                                      (setCustomId "team1")
-                                      (setPlaceholder "Team 1")
-                                      (setMinValues TEAM-NUMBER)
-                                      (setMaxValues TEAM-NUMBER)))
-        team2-row (.addComponents (discord/ActionRowBuilder.)
-                                  (.. (discord/UserSelectMenuBuilder.)
-                                      (setCustomId "team2")
-                                      (setPlaceholder "Team 2")
-                                      (setMinValues TEAM-NUMBER)
-                                      (setMaxValues TEAM-NUMBER)))
         embed-title-who-team1 (.. (discord/EmbedBuilder.)
                                   (setTitle "Who played for Team 1?")
                                   (setColor CYAN))
