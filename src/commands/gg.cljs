@@ -124,8 +124,11 @@
   (when-let [interaction-form (get-interaction-form (get-user-id interaction))]
        (= (.. interaction -message -interaction -id) (.-id (:interaction interaction-form)))))
 
+(defn reply-wrong-interaction [interaction]
+  (.reply interaction #js {:content "Oops...this is not your form" :ephemeral true}))
+
 (defn handle-collector-event-button! [interaction]
-  (when (is-user-owner-of-this interaction)
+  (if (is-user-owner-of-this interaction)
 (go (try
         (let [user-id (get-user-id interaction)
               custom-id (.-customId interaction)
@@ -224,10 +227,11 @@
                 (catch js/Error e (do (println "ERROR handle-collector-event-button! gg" e)
                                       (<p! (db/rollback-transaction client))))
                 (finally (.release client))))))
-        (catch js/Error e (println "ERROR handle-collector-event-button! gg" e))))))
+        (catch js/Error e (println "ERROR handle-collector-event-button! gg" e))))
+(reply-wrong-interaction interaction)))
 
 (defn handle-collector-event-select-menu! [interaction]
-  (when (is-user-owner-of-this interaction)
+  (if (is-user-owner-of-this interaction)
 (let [user-id (get-user-id interaction)
         custom-id (.-customId interaction)
         value (first (.-values interaction))
@@ -262,10 +266,11 @@
             "map-select"
             (<p! (.update interaction #js {:embeds #js [embed-title-who-team1]
                                            :components #js [team1-row button-cancel-row]})))
-          (catch js/Error e (println "ERROR handle-collector-event-select-menu! gg" e)))))))
+          (catch js/Error e (println "ERROR handle-collector-event-select-menu! gg" e)))))
+    (reply-wrong-interaction interaction)))
 
 (defn handle-collector-event-user-select! [interaction]
-  (when (is-user-owner-of-this interaction)
+  (if (is-user-owner-of-this interaction)
     (let [user-id (get-user-id interaction)
           custom-id (.-customId interaction)
           users (get-only-users interaction)
@@ -304,7 +309,8 @@
                   (<p! (.update interaction #js
                                 {:embeds #js [embed-title-what-score-team1]
                                  :components #js [team1-score-row button-cancel-row]})))))
-            (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e)))))))
+            (catch js/Error e (println "ERROR handle-collector-event-user-select! gg" e)))))
+    (reply-wrong-interaction interaction)))
 
 (defn interact! [interaction]
   (let [user-id (get-user-id interaction)
