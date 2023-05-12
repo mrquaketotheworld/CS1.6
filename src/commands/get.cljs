@@ -105,8 +105,7 @@
                 player-total-losses (+ player-team1-losses player-team2-losses)
                 player-total-draws (+ player-team1-draws player-team2-draws)
                 player-total-matches (+ player-total-wins player-total-losses player-total-draws)
-                player-win-rate (* (/ 100 (+ player-total-wins player-total-losses))
-                                   player-total-wins)]
+                player-win-rate (* (/ 100 player-total-matches) player-total-wins)]
             (fill-style "black")
             (.fillRect context 0 0 (.-width canvas) (.-height canvas))
             (global-alpha 0.1)
