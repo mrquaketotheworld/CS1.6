@@ -111,7 +111,6 @@
           (case custom-id
             "button-cancel"
             (do
-              (<p! (.delete (:init-message match-info)))
               (<p! (.deleteReply (:interaction match-info)))
               (reset-interaction-in-state user-id))
             "button-save"
@@ -178,7 +177,6 @@
                                                        server-id))
                   (let [match-id ((db-utils/get-first-formatted-row (<p! (match/insert-match
                          client map-select team1-score team2-score team1-id team2-id))) "id")]
-                    (<p! (.delete (:init-message match-info)))
                     (reset-interaction-in-state user-id)
                     (<p! (.update interaction #js {:embeds #js []
                                                    :content "Match successfully saved!"
@@ -220,6 +218,11 @@
         embed-title-who-team2 (.. (discord/EmbedBuilder.)
                                   (setTitle "Who played for Team 2?")
                                   (setColor CYAN))]
+    (when-let [interaction-form (get-interaction-form user-id)] ; TODO
+      (when (= (.. interaction -message -interaction -id) (.-id (:interaction interaction-form)))
+        (println 'YOUAREHOME)
+        )
+      )
     (go (try
           (update-interaction-in-state user-id custom-id value)
           (case custom-id
@@ -257,7 +260,7 @@
         users (reduce (fn [acc user-item]
                         (let [user-id (first user-item)
                               user (second user-item)]
-                          (if (.-bot user)
+                          (if nil
                             acc
                             (conj acc {:user-id user-id
                                        :username (.-username user)}))))
@@ -319,19 +322,13 @@
         (let [maps (db-utils/get-formatted-rows
                     (<p! (map-server/select-maps (.-guildId interaction) "main")))
               generated-options-maps (clj->js (generate-maps-options maps))
-              pending-interaction (get-interaction-form user-id)
-              channel (.. interaction -channel)
-              init-message (<p! (.send channel (str ":red_circle: <@" user-id "> is writing "
-                                       "the result of the match now :red_circle:")))]
+              pending-interaction (get-interaction-form user-id)]
           (try (when pending-interaction
-                 (<p! (.delete (:init-message pending-interaction)))
                  (<p! (.deleteReply (:interaction pending-interaction))))
                (catch js/Error e (println "ERROR interact!:deleteReply gg" e)))
           (reset-interaction-in-state user-id)
           (update-interaction-in-state user-id :interaction interaction)
-          (update-interaction-in-state user-id :init-message init-message)
           (.apply map-select.addOptions map-select generated-options-maps)
           (<p! (.reply interaction #js {:embeds #js [embed-title]
-                                        :components #js [map-select-row button-cancel-row]
-                                        :ephemeral true})))
+                                        :components #js [map-select-row button-cancel-row]})))
         (catch js/Error e (println "ERROR interact! gg" e))))))
