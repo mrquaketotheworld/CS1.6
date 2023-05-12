@@ -110,15 +110,19 @@
 (def team1-row (create-row (create-user-select "team1" "Team 1")))
 (def team2-row (create-row (create-user-select "team2" "Team 2")))
 
-(defn get-only-user [interaction]
+(defn get-only-users [interaction]
   (reduce (fn [acc user-item]
             (let [user-id (first user-item)
                   user (second user-item)]
-              (if (.-bot user)
+              (if nil ; TODO
                 acc
                 (conj acc {:user-id user-id
                            :username (.-username user)}))))
           [] (.from js/Array (.-users interaction))))
+
+(defn is-user-owner-of-this [interaction]
+  (when-let [interaction-form (get-interaction-form (get-user-id interaction))]
+       (= (.. interaction -message -interaction -id) (.-id (:interaction interaction-form)))))
 
 (defn handle-collector-event-button! [interaction]
   (go (try
@@ -222,16 +226,12 @@
         (catch js/Error e (println "ERROR handle-collector-event-button! gg" e)))))
 
 (defn handle-collector-event-select-menu! [interaction]
-  (let [user-id (get-user-id interaction)
+  (when (is-user-owner-of-this interaction)
+(let [user-id (get-user-id interaction)
         custom-id (.-customId interaction)
         value (first (.-values interaction))
         embed-title-who-team1 (create-embed-question "Who played for Team 1?")
         embed-title-who-team2 (create-embed-question "Who played for Team 2?")]
-    (when-let [interaction-form (get-interaction-form user-id)] ; TODO
-      (when (= (.. interaction -message -interaction -id) (.-id (:interaction interaction-form)))
-        (println 'YOUAREHOME)
-        )
-      )
     (go (try
           (update-interaction-in-state user-id custom-id value)
           (case custom-id
@@ -261,12 +261,12 @@
             "map-select"
             (<p! (.update interaction #js {:embeds #js [embed-title-who-team1]
                                            :components #js [team1-row button-cancel-row]})))
-          (catch js/Error e (println "ERROR handle-collector-event-select-menu! gg" e))))))
+          (catch js/Error e (println "ERROR handle-collector-event-select-menu! gg" e)))))))
 
 (defn handle-collector-event-user-select! [interaction]
   (let [user-id (get-user-id interaction)
         custom-id (.-customId interaction)
-        users (get-only-user interaction)
+        users (get-only-users interaction)
         team1-score-string-select (create-string-select "team1-score" "Team 1 Score")
         team2-score-string-select (create-string-select "team2-score" "Team 2 Score")
         embed-title-what-score-team1 (create-embed-question "What is the score of Team 1?")
