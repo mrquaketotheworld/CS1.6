@@ -23,3 +23,7 @@ PostgreSQL 14.7
 
 `/set` Changing some information about a player:\
 ![set](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/85592752-25f8-4610-920f-9aa9f5f5e4f1)
+
+`/top` Shows the top 10 players:\
+![Screenshot from 2023-05-14 20-33-52](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/fcaa2978-777e-4cbf-8e19-1489f6f0e94c)
+
