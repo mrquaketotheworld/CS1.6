@@ -343,11 +343,6 @@
       ('Professional', 32768),
       ('Nanaxer', 65536)"))
 
-(defn add-valid-points-constraint [] ; TODO temp
-  (query "ALTER TABLE player_server_points
-         ADD CONSTRAINT valid_points
-         CHECK (points >= 0)"))
-
 (defn add-update-player-points-procedure []
   (query
     "CREATE OR REPLACE PROCEDURE
@@ -365,7 +360,6 @@
 (defn init-tables []
   (println 'INIT-TABLES)
   (go (try
-        (<p! (add-valid-points-constraint))
         (<p! (add-update-player-points-procedure))
         ;(<p! (create-team))
         ;(<p! (create-server))
