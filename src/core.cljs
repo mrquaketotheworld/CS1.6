@@ -10,6 +10,7 @@
             [commands.gg :as gg]
             [commands.get :as get-command]
             [commands.set :as set-command]
+            [commands.top :as top]
             [db.models.server :as server]
             [db.init-tables :as init-tables]
             [db.models.map-server :as map-server]))
@@ -108,7 +109,8 @@
                                  (str "Sorry, command only works in the <#"
                                       GUILD_CHANNEL_BOT "> channel")
                                  :ephemeral true})))
-            "set" (set-command/interact! interaction))))
+            "set" (set-command/interact! interaction)
+            "top" (top/interact interaction))))
   (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
 (defn delete-collectors [collectors-type channel]

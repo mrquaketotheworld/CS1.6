@@ -28,3 +28,12 @@
   (.query client "call update_player_points($1, $2, $3)" #js [points player-id server-id]))
 
 
+(defn select-top-10 [server-id]
+  (.query db/pool
+          "SELECT player.player_id, player.player, sub.dense_rank, player_server_points.points
+          FROM player JOIN
+          (SELECT player_id, DENSE_RANK () OVER (ORDER BY points DESC)
+                  FROM player_server_points WHERE server_id = $1)
+          AS sub ON player.player_id = sub.player_id
+          JOIN player_server_points ON player.player_id = player_server_points.player_id
+          ORDER BY dense_rank LIMIT 10" #js [server-id]))
