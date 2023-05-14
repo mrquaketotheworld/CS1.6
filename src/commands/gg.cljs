@@ -18,7 +18,7 @@
 (def builder
   (.. (discord/SlashCommandBuilder.)
       (setName "gg")
-      (setDescription "Save the match result!")))
+      (setDescription "Save the match result")))
 
 (def state (atom {:interactions {}}))
 

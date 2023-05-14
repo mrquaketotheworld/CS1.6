@@ -13,7 +13,7 @@
 (def builder
   (.. (discord/SlashCommandBuilder.)
       (setName "make-teams")
-      (setDescription "Make random teams from voice channel!")
+      (setDescription "Make random teams from voice channel")
       toJSON))
 
 (defn interact! [interaction]

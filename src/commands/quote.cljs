@@ -7,7 +7,7 @@
 (def builder
   (.. (discord/SlashCommandBuilder.)
       (setName "quote")
-      (setDescription "Show random player's quote!")
+      (setDescription "Show random player's quote")
       (addStringOption (fn [option]
                          (.. option
                              (setName "word")

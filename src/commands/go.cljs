@@ -8,7 +8,7 @@
 (def builder
   (.. (discord/SlashCommandBuilder.)
       (setName "go")
-      (setDescription "Run map poll!")
+      (setDescription "Run map poll")
       (addStringOption (fn [option]
                          (.. option
                              (setName "mapmode")
