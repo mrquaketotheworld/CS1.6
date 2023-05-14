@@ -6,9 +6,8 @@
             [db.models.player :as player]
             [db.models.player-server-points :as player-server-points]
             [db.models.rank :as rank]
-            [db.models.player-team-server :as player-team-server]
-            [db.models.match :as match]
             [commands.shared.db-utils :as db-utils]
+            [commands.shared.player-info :as player-info]
             [commands.shared.constants :refer
              [DARK-GREY GREY TOXIC GREEN ORANGE BLUE LIGHT-BLUE CYAN YELLOW PURPLE RED]]))
 
@@ -77,35 +76,16 @@
                                 (<p! (player-server-points/select-player-by-server
                                       user-id server-id)))]
         (if player-server
-          (let [player-info (db-utils/get-first-formatted-row (<p! (player/select-player user-id)))
-                tag (player-info "tag")
+          (let [tag ((db-utils/get-first-formatted-row (<p! (player/select-player user-id))) "tag")
                 player-points (player-server "points")
                 rank-name ((db-utils/get-first-formatted-row (<p! (rank/select-rank-by-points
                                                           (.floor js/Math player-points)))) "rank")
                 rank-color (rank-colors rank-name)
-                team-ids-bulk (db-utils/get-formatted-rows
-                           (<p! (player-team-server/select-team-ids user-id server-id)))
-                team-ids (clj->js (map #(% "team_id") team-ids-bulk))
                 player-rating ((db-utils/get-first-formatted-row
-                 (<p! (player-server-points/select-player-rating user-id server-id))) "dense_rank")
-                player-team1-wins (js/Number ((db-utils/get-first-formatted-row
-                                      (<p! (match/select-team1-wins team-ids))) "count"))
-                player-team1-losses (js/Number ((db-utils/get-first-formatted-row
-                                        (<p! (match/select-team1-losses team-ids))) "count"))
-                player-team1-draws (js/Number ((db-utils/get-first-formatted-row
-                                       (<p! (match/select-team1-draws team-ids))) "count"))
-
-                player-team2-wins (js/Number ((db-utils/get-first-formatted-row
-                                      (<p! (match/select-team2-wins team-ids))) "count"))
-                player-team2-losses (js/Number ((db-utils/get-first-formatted-row
-                                        (<p! (match/select-team2-losses team-ids))) "count"))
-                player-team2-draws (js/Number ((db-utils/get-first-formatted-row
-                                       (<p! (match/select-team2-draws team-ids))) "count"))
-                player-total-wins (+ player-team1-wins player-team2-wins)
-                player-total-losses (+ player-team1-losses player-team2-losses)
-                player-total-draws (+ player-team1-draws player-team2-draws)
-                player-total-matches (+ player-total-wins player-total-losses player-total-draws)
-                player-win-rate (* (/ 100 player-total-matches) player-total-wins)]
+                                 (<p! (player-server-points/select-player-rating
+                                        user-id server-id))) "dense_rank")
+                {:keys [wins losses draws total win-rate]}
+                (<p! (player-info/get-matches-stats user-id server-id))]
             (fill-style "black")
             (.fillRect context 0 0 (.-width canvas) (.-height canvas))
             (global-alpha 0.1)
@@ -129,28 +109,27 @@
             (make-context-first-column)
             (fill-text "Wins" 497 56)
             (make-context-second-column)
-            (fill-text player-total-wins 578 56)
+            (fill-text wins 578 56)
 
             (make-context-first-column)
             (fill-text "Losses" 497 91)
             (make-context-second-column)
-            (fill-text player-total-losses 578 91)
+            (fill-text losses 578 91)
 
             (make-context-first-column)
             (fill-text "Draws" 497 126)
             (make-context-second-column)
-            (fill-text player-total-draws 578 126)
+            (fill-text draws 578 126)
 
             (make-context-first-column)
             (fill-text "Total" 497 161)
             (make-context-second-column)
-            (fill-text player-total-matches 578 161)
+            (fill-text total 578 161)
 
             (make-context-first-column)
             (fill-text "Win Rate" 497 244)
             (make-context-second-column)
-            (fill-text (str (.toFixed (if (js/isNaN player-win-rate) 0 player-win-rate)) "%")
-                       604 244)
+            (fill-text (str (.toFixed (if (js/isNaN win-rate) 0 win-rate)) "%") 604 244)
 
             (fill-style rank-color)
             (fill-text (str "\"" rank-name"\"") 239 244)
