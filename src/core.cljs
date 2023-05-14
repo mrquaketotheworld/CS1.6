@@ -72,6 +72,10 @@
         (let [collector (get-in @state [:user-select-collectors channel-id])]
                               (.on collector "collect" handle-collector-event-user-select!)))))
 
+(defn wrong-channel-command-reply [interaction channel]
+  (.reply interaction #js {:content (str "Sorry, command only works in the <#" channel "> channel")
+                           :ephemeral true}))
+
 (defn handle-interaction [interaction]
   (go (try
         (let [server-id (.. interaction -guild -id)
@@ -97,20 +101,14 @@
                        (.reply interaction #js
                                {:content "Sorry, you do not have permissions to use this command"
                                 :ephemeral true})))
-                   (<p! (.reply interaction #js
-                                {:content
-                                 (str "Sorry, command only works in the <#"
-                                      GUILD_CHANNEL_SCORE "> channel")
-                                 :ephemeral true})))
+                   (<p! (wrong-channel-command-reply interaction GUILD_CHANNEL_SCORE)))
             "get" (if (= channel-id GUILD_CHANNEL_BOT)
                    (get-command/interact! interaction)
-                   (<p! (.reply interaction #js
-                                {:content
-                                 (str "Sorry, command only works in the <#"
-                                      GUILD_CHANNEL_BOT "> channel")
-                                 :ephemeral true})))
+                   (<p! (wrong-channel-command-reply interaction GUILD_CHANNEL_BOT)))
             "set" (set-command/interact! interaction)
-            "top" (top/interact interaction))))
+            "top" (if (= channel-id GUILD_CHANNEL_BOT)
+                    (top/interact interaction)
+                    (<p! (wrong-channel-command-reply interaction GUILD_CHANNEL_BOT))))))
   (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
 (defn delete-collectors [collectors-type channel]
