@@ -11,8 +11,8 @@
             [db.models.team :as team]
             [db.models.player-team-server :as player-team-server]
             [db.models.match :as match]
-            [shared.db-utils :as db-utils]
-            [shared.constants :refer
+            [commands.shared.db-utils :as db-utils]
+            [commands.shared.constants :refer
              [WHITE GREEN LIGHT-BLACK CYAN RED]]))
 
 (def builder

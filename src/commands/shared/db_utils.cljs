@@ -1,4 +1,4 @@
-(ns shared.db-utils)
+(ns commands.shared.db-utils)
 
 (defn get-formatted-rows [query-result]
   (js->clj (.-rows query-result)))

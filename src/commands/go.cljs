@@ -3,7 +3,7 @@
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
             [db.models.map-server :as map-server]
-            [shared.db-utils :as db-utils]))
+            [commands.shared.db-utils :as db-utils]))
 
 (def builder
   (.. (discord/SlashCommandBuilder.)

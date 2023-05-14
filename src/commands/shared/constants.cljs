@@ -1,4 +1,4 @@
-(ns shared.constants)
+(ns commands.shared.constants)
 
 (def WHITE "#FFFFFF")
 (def LIGHT-BLACK "#2b2d31")
