@@ -3,12 +3,16 @@
             [cljs.core.async.interop :refer-macros [<p!]]
             [db.models.player-team-server :as player-team-server]
             [db.models.match :as match]
+            [db.models.rank :as rank]
             [commands.shared.db-utils :as db-utils]))
 
-(defn get-matches-stats [user-id server-id]
+(defn get-details [user-id server-id player-points]
   (js/Promise. (fn [resolve]
                  (go
-                   (let [team-ids-bulk (db-utils/get-formatted-rows
+                   (let [rank-name ((db-utils/get-first-formatted-row
+                                      (<p! (rank/select-rank-by-points
+                                                          (.floor js/Math player-points)))) "rank")
+                         team-ids-bulk (db-utils/get-formatted-rows
                                       (<p! (player-team-server/select-team-ids user-id server-id)))
                          team-ids (clj->js (map #(% "team_id") team-ids-bulk))
                          player-team1-wins (js/Number ((db-utils/get-first-formatted-row
@@ -30,8 +34,10 @@
                          player-total-matches
                            (+ player-total-wins player-total-losses player-total-draws)
                          player-win-rate (* (/ 100 player-total-matches) player-total-wins)]
-                     (resolve {:wins player-total-wins
+                     (resolve {:rank-name rank-name
+                               :wins player-total-wins
                                :losses player-total-losses
                                :draws player-total-draws
                                :total player-total-matches
-                               :win-rate player-win-rate}))))))
+                               :win-rate (str (.toFixed
+                                    (if (js/isNaN player-win-rate) 0 player-win-rate)) "%")}))))))

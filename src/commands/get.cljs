@@ -5,7 +5,6 @@
             [canvas :as canvas-lib]
             [db.models.player :as player]
             [db.models.player-server-points :as player-server-points]
-            [db.models.rank :as rank]
             [commands.shared.db-utils :as db-utils]
             [commands.shared.player-info :as player-info]
             [commands.shared.constants :refer
@@ -78,14 +77,12 @@
         (if player-server
           (let [tag ((db-utils/get-first-formatted-row (<p! (player/select-player user-id))) "tag")
                 player-points (player-server "points")
-                rank-name ((db-utils/get-first-formatted-row (<p! (rank/select-rank-by-points
-                                                          (.floor js/Math player-points)))) "rank")
-                rank-color (rank-colors rank-name)
                 player-rating ((db-utils/get-first-formatted-row
                                  (<p! (player-server-points/select-player-rating
                                         user-id server-id))) "dense_rank")
-                {:keys [wins losses draws total win-rate]}
-                (<p! (player-info/get-matches-stats user-id server-id))]
+                {:keys [rank-name wins losses draws total win-rate]}
+                (<p! (player-info/get-details user-id server-id player-points))
+                rank-color (rank-colors rank-name)]
             (fill-style "black")
             (.fillRect context 0 0 (.-width canvas) (.-height canvas))
             (global-alpha 0.1)
@@ -129,7 +126,7 @@
             (make-context-first-column)
             (fill-text "Win Rate" 497 244)
             (make-context-second-column)
-            (fill-text (str (.toFixed (if (js/isNaN win-rate) 0 win-rate)) "%") 604 244)
+            (fill-text win-rate 604 244)
 
             (fill-style rank-color)
             (fill-text (str "\"" rank-name"\"") 239 244)
