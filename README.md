@@ -7,23 +7,22 @@ NodeJS v18.16.0\
 PostgreSQL 14.7
 ## Commands
 `/quote` Shows a random quote from all quotes, or a random quote by word search:\
-![quote](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/fcb7fee7-821b-4370-8e60-5df48b60b126)
+![quote](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/697dee4d-7423-4a9e-a8a5-776aa3d44c24)
 
 `/make-teams` Creating random teams, players are taken from the voice chat:\
-![make-teams](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/93a09e81-d031-4120-8129-821b90895817)
+![make-teams](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/35aedd3c-56b6-4f1d-a92a-56f7ac910fa7)
 
 `/go` Voting with a timer for a map:\
-![go](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/458e7475-2401-477e-96d5-1b17066a968d)
+![go](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/2ea0f1df-b92e-40d8-bc71-758d8acbd0bb)
 
 `/gg` Saving the result of the match using the Elo algorithm:\
-![gg](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/4548575f-3b7f-43f2-b509-bb5a51e99c0c)
+![gg](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/ef741745-b08c-474d-8bd7-81c179a3f064)
 
 `/get` View player statistics:\
-![get](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/ef1e28da-6f47-4689-97c1-904e50fbf905)
+![get](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/e9edb7cd-f8ff-4c63-bf10-02080d225274)
 
 `/set` Changing some information about a player:\
-![set](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/85592752-25f8-4610-920f-9aa9f5f5e4f1)
+![set](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/2cf3efa2-bc3f-4a29-bca2-f3af5a9d8fd2)
 
 `/top` Shows the top 10 players:\
-![Screenshot from 2023-05-14 20-33-52](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/fcaa2978-777e-4cbf-8e19-1489f6f0e94c)
-
+![top](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/ba44e150-0885-4bc7-8971-f37c07a5db47)
