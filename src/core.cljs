@@ -133,6 +133,7 @@
     "register" (deploy/register-commands)
     "register-guild" (deploy/register-guild-commands)
     "init-tables" (init-tables/init-tables)
+    "bonus" (gg/set-bonus) ; TODO remove temp
     (println "Start")))
 
  (.on js/process "unhandledRejection"
