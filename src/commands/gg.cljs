@@ -12,7 +12,6 @@
             [db.models.player-team-server :as player-team-server]
             [db.models.match :as match]
             [commands.shared.db-utils :as db-utils]
-            [commands.shared.player-info :as player-info] ; TODO remove
             [commands.shared.constants :refer
              [WHITE GREEN LIGHT-BLACK CYAN RED]]))
 
@@ -24,23 +23,6 @@
 (def state (atom {:interactions {}}))
 
 (def TEAM-NUMBER 5)
-
-(defn set-bonus [] ; TODO remove
-  (println "SET BONUS=================")
-  (go
-    (let [client (<p! (.connect db/pool))]
-      (<p! (db/begin-transaction client))
-      (let [players (db-utils/get-formatted-rows
-                     (<p! (.query client "SELECT player_id, server_id, points FROM player_server_points")))]
-        (doseq [player players]
-          (let [{:keys [total]}
-                (<p! (player-info/get-details (player "player_id")
-                                              (player "server_id")
-                                              (player "points")))]
-            (<p! (.query client "UPDATE player_server_points
-                         SET points = points + $1
-                         WHERE player_id = $2" #js [total (player "player_id")])))))
-      (<p! (db/commit-transaction client)))))
 
 (defn update-interaction-in-state [user-id k v]
   (swap! state update-in [:interactions user-id] #(assoc % k v)))
