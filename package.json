@@ -12,6 +12,11 @@
     "pg": "8.10.0",
     "simple-elo-rating": "1.0.0"
   },
+  "scripts": {
+    "start": "node out/index.js",
+    "watch": "npx shadow-cljs watch script",
+    "release": "npx shadow-cljs release script"
+  },
   "devDependencies": {
     "shadow-cljs": "2.23.1"
   }
