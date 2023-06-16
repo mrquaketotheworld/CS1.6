@@ -350,7 +350,7 @@
     language plpgsql
     as $$
     BEGIN
-      UPDATE player_server_points SET points = points + points_arg + 1
+      UPDATE player_server_points SET points = points + points_arg + 3
       WHERE player_id = player_id_arg AND server_id = server_id_arg;
     EXCEPTION WHEN check_violation THEN
       UPDATE player_server_points SET points = 0

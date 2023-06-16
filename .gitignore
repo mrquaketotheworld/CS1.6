@@ -21,3 +21,5 @@ pom.xml.asc
 config.edn
 stats.png
 .env
+.clj-kondo
+.lsp
