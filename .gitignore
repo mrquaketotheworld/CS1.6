@@ -23,3 +23,4 @@ stats.png
 .env
 .clj-kondo
 .lsp
+/out
