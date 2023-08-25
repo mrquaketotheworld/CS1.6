@@ -171,7 +171,7 @@
   (let [event-interaction-id (.. event -message -interaction -id)
         map-name (.-customId event)
         user-id (.. event -user -id)
-        username (.. event -user -username)
+        username (.. event -user -displayName)
         voice-channel (.. event -member -voice -channel)
         callee-voice-channel-id (get-in @state
                                     [:interactions event-interaction-id :callee-voice-channel-id])]
