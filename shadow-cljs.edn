@@ -5,6 +5,7 @@
  :dependencies
  []
 
+ :jvm-opts ["-Xss16m"]
  :builds
  {:script
   {:target :node-script
