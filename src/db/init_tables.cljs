@@ -331,17 +331,17 @@
   (query
     "INSERT INTO rank (rank, points)
     VALUES
-      ('Bot', -65536),
+      ('Bot', 0),
       ('Noob', 128),
-      ('Camper', 256),
-      ('Lucker', 512),
-      ('Strawberry Legend', 1024),
-      ('Drunken Master', 2048),
-      ('Rambo', 4096),
-      ('Terminator', 8192),
-      ('Legend', 16384),
-      ('Professional', 32768),
-      ('Nanaxer', 65536)"))
+      ('Camper', 192),
+      ('Lucker', 256),
+      ('Strawberry Legend', 320),
+      ('Drunken Master', 448),
+      ('Rambo', 576),
+      ('Terminator', 704),
+      ('Legend', 960),
+      ('Professional', 1216),
+      ('Nanaxer', 1472)"))
 
 (defn add-update-player-points-procedure []
   (query
