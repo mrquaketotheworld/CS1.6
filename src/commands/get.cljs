@@ -70,7 +70,7 @@
                 server-name (.-name server)
                 user (or (.. interaction -options (getUser "user")) (.. interaction -user))
                 user-id (.-id user)
-                username (.-username user)
+                username (.-displayName user)
                 player-server (db-utils/get-first-formatted-row
                                (<p! (player-server-points/select-player-by-server
                                      user-id server-id)))]
