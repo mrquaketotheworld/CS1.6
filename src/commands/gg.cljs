@@ -117,7 +117,7 @@
               (if (.-bot user)
                 acc
                 (conj acc {:user-id user-id
-                           :username (.-username user)}))))
+                           :username (.-displayName user)}))))
           [] (.from js/Array (.-users interaction))))
 
 (defn is-user-owner-of-this [interaction]
