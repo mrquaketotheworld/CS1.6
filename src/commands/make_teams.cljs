@@ -18,13 +18,13 @@
 
 (defn interact! [interaction]
   (go (try
-    (let [username (.. interaction -member -user -username)
+    (let [username (.. interaction -member -user -displayName)
           voice-channel (.. interaction -member -voice -channel)]
       (if voice-channel
         (let [players (.. (.from js/Array (.-members voice-channel))
                           flat
                           (filter (fn [player] (.-user player)))
-                          (map (fn [player] (.. player -user -username))))]
+                          (map (fn [player] (.. player -user -displayName))))]
           (if (even? (count players))
             (let [teams (make-teams players)]
               (<p! (.reply interaction #js {:content
