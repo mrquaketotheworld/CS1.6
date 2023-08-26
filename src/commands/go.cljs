@@ -232,6 +232,6 @@
                 (<p! (.reply
                        interaction #js {:content (str "You need to be in a voice "
                                                       "channel to run map poll, "
-                                                      (.. interaction -member -user -username))
+                                                      (.. interaction -member -user -displayName))
                                         :ephemeral true}))))
           (catch js/Error e (println ERROR-MESSAGE-INTERACT e))))))
