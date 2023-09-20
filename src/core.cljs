@@ -2,6 +2,7 @@
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
+            [undici]
             [config :refer [TOKEN GUILD_ADMIN GUILD_SCORE GUILD_CHANNEL_SCORE GUILD_CHANNEL_BOT]]
             [commands.quote :as quote]
             [commands.make-teams :as make-teams]
@@ -14,6 +15,8 @@
             [db.models.server :as server]
             [db.init-tables :as init-tables]
             [db.models.map-server :as map-server]))
+
+(.setGlobalDispatcher undici (undici/Agent. #js {:connect {:timeout 60000}}))
 
 (def client (discord/Client.
                  #js {:intents #js [(.-Guilds discord/GatewayIntentBits)
