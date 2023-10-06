@@ -114,21 +114,8 @@
                     (<p! (wrong-channel-command-reply interaction GUILD_CHANNEL_BOT))))))
   (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
-(defn delete-collectors [collectors-type channel]
-  (swap! state update-in [collectors-type]
-         (fn [old-collectors]
-           (let [channel-id (.-id channel)]
-           (.stop (old-collectors channel-id))
-           (dissoc old-collectors channel-id)))))
-
-(defn on-channel-delete [channel]
-  (delete-collectors :button-collectors channel)
-  (delete-collectors :select-menu-collectors channel)
-  (delete-collectors :user-select-collectors channel))
-
 (.on client "ready" #(println "Ready!" (js/Date.)))
 (.on client "interactionCreate" handle-interaction)
-(.on client "channelDelete" on-channel-delete)
 (.login client TOKEN)
 
 (defn main [& args]
@@ -137,7 +124,3 @@
     "register-guild" (deploy/register-guild-commands)
     "init-tables" (init-tables/init-tables)
     (println "Start")))
-
- (.on js/process "unhandledRejection"
-      (fn [e] (println (js/Date.) "unhandledRejection" e)))
-
