@@ -7,7 +7,6 @@
     "canvas": "2.11.2",
     "discord.js": "14.13.0",
     "dotenv": "16.0.1",
-    "multi-elo": "2.2.0",
     "node-canvas": "2.9.0",
     "pg": "8.10.0",
     "simple-elo-rating": "1.0.0"
