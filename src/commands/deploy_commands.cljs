@@ -10,7 +10,6 @@
    [commands.set :as set-command]
    [commands.top :as top]))
 
-
 (def commands [quote/builder make-teams/builder go-command/builder])
 (def guild-commands [gg/builder get-command/builder set-command/builder top/builder])
 

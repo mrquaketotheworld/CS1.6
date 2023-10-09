@@ -1,10 +1,5 @@
-;; shadow-cljs configuration
-{:source-paths
- ["src"]
-
- :dependencies
- []
-
+{:source-paths ["src"]
+ :dependencies []
  :jvm-opts ["-Xss16m"]
  :builds
  {:script

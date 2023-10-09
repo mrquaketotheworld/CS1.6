@@ -24,7 +24,7 @@
           (doseq [player players]
             (let [{:keys [rank-name wins losses draws total win-rate]}
                   (<p! (player-info/get-details (player "player_id") server-id
-                                                      (player "points")))]
+                                                (player "points")))]
               (swap! description str (discord/bold (player "dense_rank")) ". "
                      (discord/bold (player "player"))
                      "\n    Points: " (in-code-string (.toFixed (player "points") 2))
