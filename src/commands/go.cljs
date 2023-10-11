@@ -204,7 +204,7 @@
   (let [option (or (.. interaction -options (getString "mapmode")) "main")
         server-id (.. interaction -guild -id)
         interaction-id (.-id interaction)]
-    (println "/go INTERACTION" (js/Date.))
+    (println "/go " (js/Date.))
     (go (try
           (let [maps
                 (format-maps (db-utils/get-formatted-rows

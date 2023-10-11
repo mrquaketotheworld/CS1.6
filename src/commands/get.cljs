@@ -169,4 +169,5 @@
           (catch js/Error e (println "ERROR on-first-image-load get" e))))))
 
 (defn interact! [interaction]
+  (println "/get " (js/Date.))
   (.then (canvas/loadImage "src/assets/nanax_logo.png") (on-first-image-load interaction)))

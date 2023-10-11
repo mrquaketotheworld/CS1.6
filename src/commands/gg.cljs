@@ -322,6 +322,7 @@
     (reply-wrong-interaction interaction)))
 
 (defn interact! [interaction]
+  (println "/gg " (js/Date.))
   (let [user-id (get-user-id interaction)
         map-select (create-string-select "map-select" "Map")
         map-select-row (create-row map-select)

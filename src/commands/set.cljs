@@ -17,6 +17,7 @@
       toJSON))
 
 (defn interact! [interaction]
+  (println "/set " (js/Date.))
   (go (try
         (let [tag (.. interaction -options (getString "tag"))
               user-id (.. interaction -user -id)]

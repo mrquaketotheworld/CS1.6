@@ -16,6 +16,7 @@
   (str "`" value "`"))
 
 (defn interact [interaction]
+  (println "/top" (js/Date.))
   (go (try
         (let [server-id (.. interaction -guild -id)
               players (db-utils/get-formatted-rows
