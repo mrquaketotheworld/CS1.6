@@ -6,6 +6,9 @@ OpenJDK 17.0.6\
 NodeJS v18.16.0\
 PostgreSQL 14.7
 ## Commands
+`/mem` Command with subcommands which using mem template to create mem with text:\
+![file](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/be9afe9f-d087-4c80-bed3-48fc46b580d1)
+
 `/quote` Shows a random quote from all quotes, or a random quote by word search:\
 ![quote](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/697dee4d-7423-4a9e-a8a5-776aa3d44c24)
 
