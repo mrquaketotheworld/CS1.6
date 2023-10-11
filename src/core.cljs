@@ -11,6 +11,7 @@
             [commands.get :as get-command]
             [commands.set :as set-command]
             [commands.top :as top]
+            [commands.mem :as mem]
             [db.models.server :as server]
             [db.init-tables :as init-tables]
             [db.models.map-server :as map-server]))
@@ -108,7 +109,8 @@
               "set" (set-command/interact! interaction)
               "top" (if (= channel-id GUILD_CHANNEL_BOT)
                       (top/interact interaction)
-                      (<p! (wrong-channel-command-reply interaction GUILD_CHANNEL_BOT))))))
+                      (<p! (wrong-channel-command-reply interaction GUILD_CHANNEL_BOT)))
+              "mem" (mem/interact! interaction))))
         (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
 (.on client "ready" #(println "Ready!" (js/Date.)))

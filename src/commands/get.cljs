@@ -22,6 +22,7 @@
 
 (canvas-lib/registerFont "src/assets/Oswald-Regular.ttf" #js {:family "Oswald Regular"})
 (canvas-lib/registerFont "src/assets/Military Poster.ttf" #js {:family "Military Poster Regular"})
+(def nanax-logo (canvas/loadImage "src/assets/nanax_logo.png"))
 
 (def canvas (canvas-lib/createCanvas 688 276))
 (def context (.getContext canvas "2d"))
@@ -170,4 +171,4 @@
 
 (defn interact! [interaction]
   (println "/get " (js/Date.))
-  (.then (canvas/loadImage "src/assets/nanax_logo.png") (on-first-image-load interaction)))
+  (.then nanax-logo (on-first-image-load interaction)))
