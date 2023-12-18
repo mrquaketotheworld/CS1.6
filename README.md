@@ -1,5 +1,5 @@
 # CS1.6
-CS 1.6 bot was created for play-cs.com game communities in Discord.
+CS 1.6 bot was created for play-cs.com game communities in Discord. Has different commands such as rating, voting and others.
 ## Prerequisites
 Ubuntu: ```sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev```\
 OpenJDK 17.0.6\
