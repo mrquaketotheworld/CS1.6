@@ -59,9 +59,12 @@
 (defn column-font-normal []
   (font "28px Oswald"))
 
-(defn format-tag [tag]
-  (let [tag-width (.. context (measureText tag) -width)]
-    (when (> tag-width 160) (font "18px Oswald"))))
+(defn format-team [team]
+  (let [team-width (.. context (measureText team) -width)]
+    (when (> team-width 160) (font "18px Oswald"))))
+
+(defn use-set [team]
+  (if (= team "UNKNOWN") "use /set" team))
 
 (defn on-first-image-load [interaction]
   (fn [image]
@@ -76,7 +79,7 @@
                                (<p! (player-server-points/select-player-by-server
                                      user-id server-id)))]
             (if player-server
-              (let [tag ((db-utils/get-first-formatted-row (<p! (player/select-player user-id))) "tag")
+              (let [team ((db-utils/get-first-formatted-row (<p! (player/select-player user-id))) "tag")
                     player-points (player-server "points")
                     player-rating ((db-utils/get-first-formatted-row
                                     (<p! (player-server-points/select-player-rating
@@ -106,10 +109,10 @@
                 (fill-style "white")
 
                 (make-context-first-column)
-                (fill-text "Tag" 239 56)
+                (fill-text "Team" 239 56)
                 (make-context-second-column)
-                (format-tag tag)
-                (fill-text tag 317 56)
+                (format-team team)
+                (fill-text (use-set team) 317 56)
                 (column-font-normal)
 
                 (make-context-first-column)
