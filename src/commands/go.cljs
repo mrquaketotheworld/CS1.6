@@ -43,9 +43,9 @@
   (let [emoji-start-end (emoji-maps map-name)]
     (str (reduce (fn [acc char]
                    (str acc (if (js/isNaN char)
-                              (str ":regional_indicator_" (.toLowerCase char) ":")
+                              (str ":regional_indicator_" (.toLowerCase char) ": ")
                               (emoji-numbers char))))
-                 (str emoji-start-end " ") map-name) " " emoji-start-end)))
+                 (str emoji-start-end " ") map-name) emoji-start-end)))
 
 (defn get-maps [interaction-id]
   (get-in @state [:interactions interaction-id :maps]))
