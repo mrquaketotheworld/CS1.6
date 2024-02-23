@@ -111,7 +111,7 @@
 (defn create-users-list [maps]
   (let [users-list-string
         (reduce (fn [acc voted-user]
-                  (str acc ":snowflake: " (:username voted-user)
+                  (str acc ":jigsaw: " (:username voted-user)
                        (when (:is-disabled (first maps)) (str ": " (:map-name voted-user))) "\n"))
                 "" (get-voted-users maps))]
     (if (empty? users-list-string) "" users-list-string)))
