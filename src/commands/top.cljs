@@ -9,7 +9,7 @@
 (def builder
   (.. (discord/SlashCommandBuilder.)
       (setName "top")
-      (setDescription "Show top 10")
+      (setDescription "Show top 10 players")
       toJSON))
 
 (defn in-code-string [value]

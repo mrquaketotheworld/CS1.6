@@ -13,6 +13,7 @@
             [commands.top :as top]
             [commands.mem :as mem]
             [commands.coin :as coin]
+            [commands.help :as help]
             [db.models.server :as server]
             [db.init-tables :as init-tables]
             [db.models.map-server :as map-server]))
@@ -112,7 +113,8 @@
                       (top/interact interaction)
                       (<p! (wrong-channel-command-reply interaction GUILD_CHANNEL_BOT)))
               "mem" (mem/interact! interaction)
-              "coin" (coin/interact! interaction))))
+              "coin" (coin/interact! interaction)
+              "help" (help/interact! interaction))))
         (catch js/Error e (println "ERROR handle-interaction core" e)))))
 
 (.on client "ready" #(println "Ready!" (js/Date.)))
