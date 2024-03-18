@@ -9,9 +9,10 @@
    [commands.get :as get-command]
    [commands.set :as set-command]
    [commands.top :as top]
-   [commands.mem :as mem]))
+   [commands.mem :as mem]
+   [commands.coin :as coin]))
 
-(def commands [quote/builder make-teams/builder go-command/builder mem/builder])
+(def commands [quote/builder make-teams/builder go-command/builder mem/builder coin/builder])
 (def guild-commands [gg/builder get-command/builder set-command/builder top/builder])
 
 (def rest-api (.setToken (discord/REST. #js {:version 10}) TOKEN))
