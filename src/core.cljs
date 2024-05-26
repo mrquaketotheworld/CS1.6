@@ -2,7 +2,7 @@
   (:require ["discord.js" :as discord]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
-            [config :refer [TOKEN GUILD_ADMIN GUILD_SCORE GUILD_CHANNEL_SCORE GUILD_CHANNEL_BOT]]
+            [config :refer [TOKEN]]
             [commands.quote :as quote]
             [commands.make-teams :as make-teams]
             [commands.go :as go-command]
@@ -24,6 +24,10 @@
                                 (.-MessageContent discord/GatewayIntentBits)]}))
 
 (def state (atom {:button-collectors {} :select-menu-collectors {} :user-select-collectors {}}))
+
+(def CHANNEL_BOT "bot")
+(def CHANNEL_SCORE "score")
+(def ROLE_SCORE "score")
 
 (defn handle-collector-event-type-button! [interaction]
   (let [command-name (.. interaction -message -interaction -commandName)]
@@ -76,7 +80,7 @@
         (.on collector "collect" handle-collector-event-user-select!)))))
 
 (defn wrong-channel-command-reply [interaction channel]
-  (.reply interaction #js {:content (str "Sorry, command only works in the <#" channel "> channel")
+  (.reply interaction #js {:content (str "Sorry, command only works in the **" channel "** channel")
                            :ephemeral true}))
 
 (defn handle-interaction [interaction]
@@ -85,7 +89,7 @@
               server-name (.. interaction -guild -name)
               server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))
               user-roles (.. interaction -member -roles -cache)
-              channel-id (.-channelId interaction)]
+              channel-name (.toLowerCase (.. interaction -channel -name))]
           (init-collector-type-button interaction)
           (init-collector-type-select-menu interaction)
           (init-collector-type-user-select interaction)
@@ -97,21 +101,22 @@
               "quote" (quote/interact! interaction)
               "make-teams" (make-teams/interact! interaction)
               "go" (go-command/interact! interaction)
-              "gg" (if (= channel-id GUILD_CHANNEL_SCORE)
-                     (if (or (.has user-roles GUILD_ADMIN) (.has user-roles GUILD_SCORE))
+              "gg" (if (= channel-name CHANNEL_SCORE)
+                     (if (boolean (some #(= ROLE_SCORE (.toLowerCase (.-name (get % 1)))) user-roles))
                        (gg/interact! interaction)
                        (<p!
                         (.reply interaction #js
-                                             {:content "Sorry, you do not have permissions to use this command"
+                                             {:content (str "Sorry, you do not have permissions to use this command."
+                                                            " You need to have **" ROLE_SCORE "** role.")
                                               :ephemeral true})))
-                     (<p! (wrong-channel-command-reply interaction GUILD_CHANNEL_SCORE)))
-              "get" (if (= channel-id GUILD_CHANNEL_BOT)
+                     (<p! (wrong-channel-command-reply interaction CHANNEL_SCORE)))
+              "get" (if (= channel-name CHANNEL_BOT)
                       (get-command/interact! interaction)
-                      (<p! (wrong-channel-command-reply interaction GUILD_CHANNEL_BOT)))
+                      (<p! (wrong-channel-command-reply interaction CHANNEL_BOT)))
               "set" (set-command/interact! interaction)
-              "top" (if (= channel-id GUILD_CHANNEL_BOT)
+              "top" (if (= channel-name CHANNEL_BOT)
                       (top/interact interaction)
-                      (<p! (wrong-channel-command-reply interaction GUILD_CHANNEL_BOT)))
+                      (<p! (wrong-channel-command-reply interaction CHANNEL_BOT)))
               "mem" (mem/interact! interaction)
               "coin" (coin/interact! interaction)
               "help" (help/interact! interaction))))
