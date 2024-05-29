@@ -45,9 +45,6 @@
 (defn fill-text [text x y]
   (.fillText context text x y))
 
-(defn global-alpha [number]
-  (set! (.-globalAlpha context) number))
-
 (defn font [font-name]
   (set! (.-font context) font-name))
 
@@ -75,124 +72,128 @@
   (make-context-second-column)
   (fill-text second-col-text (first second-col-coords) (second second-col-coords)))
 
-(defn on-first-image-load [interaction]
-  (fn [image]
-    (go (try
-          (let [server (.-guild interaction)
-                server-id (.-id server)
-                server-name (.-name server)
-                user (or (.. interaction -options (getUser "user")) (.. interaction -user))
-                user-id (.-id user)
-                username (.-displayName user)
-                player-server (db-utils/get-first-formatted-row
-                               (<p! (player-server-points/select-player-by-server
-                                     user-id server-id)))]
-            (if player-server
-              (let [team ((db-utils/get-first-formatted-row (<p! (player/select-player user-id))) "tag")
-                    player-points (player-server "points")
-                    player-rating ((db-utils/get-first-formatted-row
-                                    (<p! (player-server-points/select-player-rating
-                                          user-id server-id))) "dense_rank")
-                    {:keys [rank-name wins losses draws total win-rate round-diff maps-stats]}
-                    (<p! (player-info/get-details user-id server-id player-points))
-                    rank-color (rank-colors rank-name)
-                    formatted-maps-stats (reduce (fn [acc map-stats]
-                                                   (let [wins (:wins map-stats)
-                                                         losses (:losses map-stats)
-                                                         draws (:draws map-stats)
-                                                         total (:total map-stats)
-                                                         wr (:win-rate map-stats)]
-                                                     (str acc (discord/bold (:map map-stats)) "\n"
-                                                          "   W: " (player-info/in-code-string wins)
-                                                          "   L: " (player-info/in-code-string losses)
-                                                          "   D: " (player-info/in-code-string draws)
-                                                          "   T: " (player-info/in-code-string total)
-                                                          "   WR: " (player-info/in-code-string wr)
-                                                          "\n"))) "" maps-stats)
-                    bg (<p! (canvas/loadImage (str "src/assets/bg/bg" (rand-int 12) ".jpg")))]
+(defn set-shadow [n]
+  (set! (.-shadowOffsetX context) n)
+  (set! (.-shadowOffsetY context) n))
 
-                (.drawImage context bg 0 0 (.-width canvas) (.-height canvas))
-                (.drawImage context image 32 212 32 32)
-                (set! (.-shadowOffsetX context) 1)
-                (set! (.-shadowOffsetY context) 1)
-                (set! (.-shadowColor context) "black")
-                (set! (.-shadowBlur context) 0)
+(defn on-image-load [interaction image]
+  (go (try
+        (let [server (.-guild interaction)
+              server-id (.-id server)
+              server-name (.-name server)
+              user (or (.. interaction -options (getUser "user")) (.. interaction -user))
+              user-id (.-id user)
+              username (.-displayName user)
+              player-server (db-utils/get-first-formatted-row
+                             (<p! (player-server-points/select-player-by-server
+                                   user-id server-id)))]
+          (if player-server
+            (let [team ((db-utils/get-first-formatted-row (<p! (player/select-player user-id))) "tag")
+                  player-points (player-server "points")
+                  player-rating ((db-utils/get-first-formatted-row
+                                  (<p! (player-server-points/select-player-rating
+                                        user-id server-id))) "dense_rank")
+                  {:keys [rank-name wins losses draws total win-rate round-diff maps-stats]}
+                  (<p! (player-info/get-details user-id server-id player-points))
+                  rank-color (rank-colors rank-name)
+                  formatted-maps-stats (reduce (fn [acc map-stats]
+                                                 (let [wins (:wins map-stats)
+                                                       losses (:losses map-stats)
+                                                       draws (:draws map-stats)
+                                                       total (:total map-stats)
+                                                       wr (:win-rate map-stats)]
+                                                   (str acc (discord/bold (:map map-stats)) "\n"
+                                                        "   W: " (player-info/in-code-string wins)
+                                                        "   L: " (player-info/in-code-string losses)
+                                                        "   D: " (player-info/in-code-string draws)
+                                                        "   T: " (player-info/in-code-string total)
+                                                        "   WR: " (player-info/in-code-string wr)
+                                                        "\n"))) "" maps-stats)
+                  bg (<p! (canvas/loadImage (str "src/assets/bg/bg" (rand-int 12) ".jpg")))]
 
-                (make-context-first-column)
-                (font "18px Oswald")
-                (fill-text server-name 32 268)
-                (column-font-normal)
-                (fill-text "Team" 239 56)
-                (make-context-second-column)
-                (format-team team)
-                (fill-text (use-set team) 317 56)
+              (set-shadow 0)
+              (.drawImage context bg 0 0 (.-width canvas) (.-height canvas))
+              (.drawImage context image 32 212 32 32)
+              (set-shadow 1)
+              (set! (.-shadowColor context) "black")
+              (set! (.-shadowBlur context) 0)
 
-                (render-column {:first-col-text "Points"
-                                :second-col-text (.toFixed player-points 2)
-                                :first-col-coords [239 91]
-                                :second-col-coords [317 91]})
+              (make-context-first-column)
+              (font "18px Oswald")
+              (fill-text server-name 32 268)
+              (column-font-normal)
+              (fill-text "Team" 239 56)
+              (make-context-second-column)
+              (format-team team)
+              (fill-text (use-set team) 317 56)
 
-                (render-column {:first-col-text "Round Diff"
-                                :second-col-text round-diff
-                                :first-col-coords [239 126]
-                                :second-col-coords [361 126]})
+              (render-column {:first-col-text "Points"
+                              :second-col-text (.toFixed player-points 2)
+                              :first-col-coords [239 91]
+                              :second-col-coords [317 91]})
 
-                (render-column {:first-col-text "Wins"
-                                :second-col-text wins
-                                :first-col-coords [497 56]
-                                :second-col-coords [578 56]})
+              (render-column {:first-col-text "Round Diff"
+                              :second-col-text round-diff
+                              :first-col-coords [239 126]
+                              :second-col-coords [361 126]})
 
-                (render-column {:first-col-text "Losses"
-                                :second-col-text losses
-                                :first-col-coords [497 91]
-                                :second-col-coords [578 91]})
+              (render-column {:first-col-text "Wins"
+                              :second-col-text wins
+                              :first-col-coords [497 56]
+                              :second-col-coords [578 56]})
 
-                (render-column {:first-col-text "Draws"
-                                :second-col-text draws
-                                :first-col-coords [497 126]
-                                :second-col-coords [578 126]})
+              (render-column {:first-col-text "Losses"
+                              :second-col-text losses
+                              :first-col-coords [497 91]
+                              :second-col-coords [578 91]})
 
-                (render-column {:first-col-text "Total"
-                                :second-col-text total
-                                :first-col-coords [497 161]
-                                :second-col-coords [578 161]})
+              (render-column {:first-col-text "Draws"
+                              :second-col-text draws
+                              :first-col-coords [497 126]
+                              :second-col-coords [578 126]})
 
-                (render-column {:first-col-text "Win Rate"
-                                :second-col-text win-rate
-                                :first-col-coords [497 244]
-                                :second-col-coords [604 244]})
+              (render-column {:first-col-text "Total"
+                              :second-col-text total
+                              :first-col-coords [497 161]
+                              :second-col-coords [578 161]})
 
+              (render-column {:first-col-text "Win Rate"
+                              :second-col-text win-rate
+                              :first-col-coords [497 244]
+                              :second-col-coords [604 244]})
+
+              (fill-style rank-color)
+              (fill-text (str "\"" rank-name "\"") 239 244)
+
+              (fill-style "white")
+              (font "43px \"Oswald\"")
+              (fill-text (str "#" player-rating) 72 244)
+              (let [image (<p! (canvas-lib/loadImage
+                                (.displayAvatarURL user #js {:extension "jpg"})))]
+                (set-shadow 0)
+                (.drawImage context image 32 32 128 128)
+                (set-shadow 3)
+                (font "58px \"Military Poster\"")
                 (fill-style rank-color)
-                (fill-text (str "\"" rank-name "\"") 239 244)
-
-                (fill-style "white")
-                (font "43px \"Oswald\"")
-                (fill-text (str "#" player-rating) 72 244)
-                (let [image (<p! (canvas-lib/loadImage
-                                  (.displayAvatarURL user #js {:extension "jpg"})))]
-                  (set! (.-shadowOffsetX context) 0)
-                  (set! (.-shadowOffsetY context) 0)
-                  (.drawImage context image 32 32 128 128)
-                  (set! (.-shadowOffsetX context) 3)
-                  (set! (.-shadowOffsetY context) 3)
-                  (font "58px \"Military Poster\"")
-                  (fill-style rank-color)
-                  (fill-text username 104 180)
-                  (<p! (.reply interaction #js {:files #js [(discord/AttachmentBuilder.
-                                                             (.toBuffer canvas "image/png"))]}))
-                  (<p! (.followUp interaction #js {:content formatted-maps-stats}))))
-              (<p! (.reply interaction
-                           #js {:content (str "Sorry, you need to play at "
-                                              "least one **" server-name "** match to get your stats, "
-                                              username)
-                                :ephemeral true}))))
-          (catch js/Error e (println "ERROR on-first-image-load get" e))))))
+                (fill-text username 104 180)
+                (<p! (.reply interaction #js {:files #js [(discord/AttachmentBuilder.
+                                                           (.toBuffer canvas "image/png"))]}))
+                (<p! (.followUp interaction #js {:content formatted-maps-stats}))))
+            (<p! (.reply interaction
+                         #js {:content (str "Sorry, you need to play at "
+                                            "least one **" server-name "** match to get your stats, "
+                                            username)
+                              :ephemeral true}))))
+        (catch js/Error e (println "ERROR on-first-image-load get" e)))))
 
 (defn interact! [interaction]
   (go (try
-        (let [image-response (<p! (.get axios (.. interaction -guild (iconURL)) #js {:responseType "arraybuffer"}))
-              image (<p! (.. (sharp (.-data image-response)) (toFormat "png") (toBuffer)))]
-          (.then (canvas/loadImage image) (on-first-image-load interaction)))
+        (let [icon-url (.. interaction -guild (iconURL))]
+          (if icon-url
+            (let [image-response (<p! (.get axios icon-url #js {:responseType "arraybuffer"}))
+                  image (<p! (.. (sharp (.-data image-response)) (toFormat "png") (toBuffer)))]
+              (on-image-load interaction (<p! (canvas/loadImage image))))
+            (on-image-load interaction (<p! (canvas/loadImage "src/assets/harold-thumbsup.jpeg")))))
 
         (catch js/Error e (println "ERROR interact!" e)))))
 

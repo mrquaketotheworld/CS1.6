@@ -34,5 +34,6 @@
           (SELECT player_id, DENSE_RANK () OVER (ORDER BY points DESC)
                   FROM player_server_points WHERE server_id = $1)
           AS sub ON player.player_id = sub.player_id
-          JOIN player_server_points ON player.player_id = player_server_points.player_id
-          ORDER BY dense_rank LIMIT 10" #js [server-id]))
+          JOIN player_server_points ON player.player_id = player_server_points.player_id AND
+          player_server_points.server_id = $1
+          ORDER BY dense_rank LIMIT 100" #js [server-id]))

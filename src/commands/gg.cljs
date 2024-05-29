@@ -216,18 +216,17 @@
                                                            (nth team2-ids 4)
                                                            team2-id
                                                            server-id))
-                      (let [match-id ((db-utils/get-first-formatted-row
-                                       (<p! (match/insert-match client map-select team1-score
-                                                                team2-score team1-id team2-id))) "id")]
-                        (reset-interaction-in-state user-id)
-                        (<p! (.update interaction
-                                      #js {:content (str "Match ID: " match-id)
-                                           :embeds #js [(create-map-embed map-select)
-                                                        (create-team-embed team1-score team2-score
-                                                                           team1-usernames)
-                                                        (create-team-embed team2-score team1-score
-                                                                           team2-usernames)]
-                                           :components #js []}))))
+                      (<p! (match/insert-match client map-select team1-score
+                                               team2-score team1-id team2-id))
+                      (reset-interaction-in-state user-id)
+                      (<p! (.update interaction
+                                    #js {:content nil
+                                         :embeds #js [(create-map-embed map-select)
+                                                      (create-team-embed team1-score team2-score
+                                                                         team1-usernames)
+                                                      (create-team-embed team2-score team1-score
+                                                                         team2-usernames)]
+                                         :components #js []})))
 
                     (<p! (db/commit-transaction client))
                     (catch js/Error e (do (println "ERROR handle-collector-event-button! gg" e)
