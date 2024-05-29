@@ -134,5 +134,4 @@
   (case (nth args 0)
     "register" (deploy/register-commands)
     "init-tables" (init-tables/init-tables)
-    "delete-guild-commands" (deploy/delete-guild-commands)
     (println "Start")))
