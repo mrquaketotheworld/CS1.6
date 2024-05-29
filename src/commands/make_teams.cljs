@@ -17,7 +17,6 @@
       toJSON))
 
 (defn interact! [interaction]
-  (println "/make-teams" (js/Date.))
   (go (try
         (let [username (.. interaction -member -user -displayName)
               voice-channel (.. interaction -member -voice -channel)]

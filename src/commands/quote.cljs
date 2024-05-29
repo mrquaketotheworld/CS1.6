@@ -15,7 +15,6 @@
       toJSON))
 
 (defn interact! [interaction]
-  (println "/quote" (js/Date.))
   (let [word (.. interaction -options (getString "word"))]
     (go (try
           (<p! (.reply interaction

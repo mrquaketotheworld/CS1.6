@@ -159,19 +159,19 @@
                             username (:username user)]
                         (<p! (player/insert-player-if-not-exists client user-id-iter username))
                         (let [player-server (.-rows (<p!
-                                                      (player-server-points/select-player-by-server
-                                                          client user-id-iter server-id)))]
+                                                     (player-server-points/select-player-by-server
+                                                      client user-id-iter server-id)))]
                           (when (empty? player-server)
                             (<p! (player-server-points/insert-player
                                   client user-id-iter server-id))))))
                     (let [team1-points
                           (db-utils/get-formatted-rows
-                            (<p! (player-server-points/select-players-points
-                                   client (clj->js team1-ids) server-id)))
+                           (<p! (player-server-points/select-players-points
+                                 client (clj->js team1-ids) server-id)))
                           team2-points
                           (db-utils/get-formatted-rows
-                            (<p! (player-server-points/select-players-points
-                                   client (clj->js team2-ids) server-id)))
+                           (<p! (player-server-points/select-players-points
+                                 client (clj->js team2-ids) server-id)))
                           team1-total-points (sum-players-points team1-points)
                           team2-total-points (sum-players-points team2-points)
                           elo-K-factor 160
@@ -217,8 +217,8 @@
                                                            team2-id
                                                            server-id))
                       (let [match-id ((db-utils/get-first-formatted-row
-                                        (<p! (match/insert-match client map-select team1-score
-                                                       team2-score team1-id team2-id))) "id")]
+                                       (<p! (match/insert-match client map-select team1-score
+                                                                team2-score team1-id team2-id))) "id")]
                         (reset-interaction-in-state user-id)
                         (<p! (.update interaction
                                       #js {:content (str "Match ID: " match-id)
@@ -260,7 +260,7 @@
                                      (str "\n:warning:WARNING:warning:\n"
                                           "Please check the data you entered carefully.\n"
                                           "If you click on the save button, "
-                                  "then saved result of the match and stats cannot be changed.\n"))
+                                          "then saved result of the match and stats cannot be changed.\n"))
                     finish-message-map (create-map-embed map-select)
                     finish-message-team1 (create-team-embed team1-score team2-score
                                                             team1-usernames)
@@ -312,8 +312,8 @@
                                                   :components #js [team2-score-row
                                                                    button-cancel-row]}))
                       (<p! (.reply interaction #js
-                                   {:content "One player cannot play on two teams at the same time"
-                                    :ephemeral true}))))
+                                                {:content "One player cannot play on two teams at the same time"
+                                                 :ephemeral true}))))
                   "team1"
                   (<p! (.update interaction
                                 #js {:embeds #js [embed-title-what-score-team1]
@@ -322,7 +322,6 @@
     (reply-wrong-interaction interaction)))
 
 (defn interact! [interaction]
-  (println "/gg " (js/Date.))
   (let [user-id (get-user-id interaction)
         map-select (create-string-select "map-select" "Map")
         map-select-row (create-row map-select)

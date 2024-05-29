@@ -67,6 +67,14 @@
 (defn use-set [team]
   (if (= team "UNKNOWN") "use /set" team))
 
+(defn render-column
+  [{:keys [first-col-text second-col-text first-col-coords second-col-coords]}]
+  (column-font-normal)
+  (make-context-first-column)
+  (fill-text first-col-text (first first-col-coords) (second first-col-coords))
+  (make-context-second-column)
+  (fill-text second-col-text (first second-col-coords) (second second-col-coords)))
+
 (defn on-first-image-load [interaction]
   (fn [image]
     (go (try
@@ -104,59 +112,55 @@
                     bg (<p! (canvas/loadImage (str "src/assets/bg/bg" (rand-int 12) ".jpg")))]
 
                 (.drawImage context bg 0 0 (.-width canvas) (.-height canvas))
+                (.drawImage context image 32 212 32 32)
                 (set! (.-shadowOffsetX context) 1)
                 (set! (.-shadowOffsetY context) 1)
                 (set! (.-shadowColor context) "black")
                 (set! (.-shadowBlur context) 0)
 
-                (.drawImage context image 32 212 32 32)
-                (global-alpha 1)
-                (column-font-normal)
-                (fill-style "white")
-
                 (make-context-first-column)
-                (fill-text "Team" 239 56)
                 (font "18px Oswald")
                 (fill-text server-name 32 268)
                 (column-font-normal)
+                (fill-text "Team" 239 56)
                 (make-context-second-column)
                 (format-team team)
                 (fill-text (use-set team) 317 56)
 
-                (make-context-first-column)
-                (fill-text "Points" 239 91)
-                (make-context-second-column)
-                (fill-text (.toFixed player-points 2) 317 91)
+                (render-column {:first-col-text "Points"
+                                :second-col-text (.toFixed player-points 2)
+                                :first-col-coords [239 91]
+                                :second-col-coords [317 91]})
 
-                (make-context-first-column)
-                (fill-text "Round Diff" 239 126)
-                (make-context-second-column)
-                (fill-text round-diff 361 126)
+                (render-column {:first-col-text "Round Diff"
+                                :second-col-text round-diff
+                                :first-col-coords [239 126]
+                                :second-col-coords [361 126]})
 
-                (make-context-first-column)
-                (fill-text "Wins" 497 56)
-                (make-context-second-column)
-                (fill-text wins 578 56)
+                (render-column {:first-col-text "Wins"
+                                :second-col-text wins
+                                :first-col-coords [497 56]
+                                :second-col-coords [578 56]})
 
-                (make-context-first-column)
-                (fill-text "Losses" 497 91)
-                (make-context-second-column)
-                (fill-text losses 578 91)
+                (render-column {:first-col-text "Losses"
+                                :second-col-text losses
+                                :first-col-coords [497 91]
+                                :second-col-coords [578 91]})
 
-                (make-context-first-column)
-                (fill-text "Draws" 497 126)
-                (make-context-second-column)
-                (fill-text draws 578 126)
+                (render-column {:first-col-text "Draws"
+                                :second-col-text draws
+                                :first-col-coords [497 126]
+                                :second-col-coords [578 126]})
 
-                (make-context-first-column)
-                (fill-text "Total" 497 161)
-                (make-context-second-column)
-                (fill-text total 578 161)
+                (render-column {:first-col-text "Total"
+                                :second-col-text total
+                                :first-col-coords [497 161]
+                                :second-col-coords [578 161]})
 
-                (make-context-first-column)
-                (fill-text "Win Rate" 497 244)
-                (make-context-second-column)
-                (fill-text win-rate 604 244)
+                (render-column {:first-col-text "Win Rate"
+                                :second-col-text win-rate
+                                :first-col-coords [497 244]
+                                :second-col-coords [604 244]})
 
                 (fill-style rank-color)
                 (fill-text (str "\"" rank-name "\"") 239 244)
@@ -164,10 +168,10 @@
                 (fill-style "white")
                 (font "43px \"Oswald\"")
                 (fill-text (str "#" player-rating) 72 244)
-                (set! (.-shadowOffsetX context) 0)
-                (set! (.-shadowOffsetY context) 0)
                 (let [image (<p! (canvas-lib/loadImage
                                   (.displayAvatarURL user #js {:extension "jpg"})))]
+                  (set! (.-shadowOffsetX context) 0)
+                  (set! (.-shadowOffsetY context) 0)
                   (.drawImage context image 32 32 128 128)
                   (set! (.-shadowOffsetX context) 3)
                   (set! (.-shadowOffsetY context) 3)
@@ -185,7 +189,6 @@
           (catch js/Error e (println "ERROR on-first-image-load get" e))))))
 
 (defn interact! [interaction]
-  (println "/get " (js/Date.))
   (go (try
         (let [image-response (<p! (.get axios (.. interaction -guild (iconURL)) #js {:responseType "arraybuffer"}))
               image (<p! (.. (sharp (.-data image-response)) (toFormat "png") (toBuffer)))]

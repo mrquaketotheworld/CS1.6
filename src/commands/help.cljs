@@ -10,7 +10,6 @@
       toJSON))
 
 (defn interact! [interaction]
-  (println "/help" (js/Date.))
   (let [commands [{:name "/coin" :desc "Toss a coin"}
                   {:name "/get" :desc "Get user stats"}
                   {:name "/gg" :desc "Save the match result"}

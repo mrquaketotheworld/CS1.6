@@ -122,7 +122,6 @@
     "harold-thumbsup" (render-harold-thumbsup options)))
 
 (defn interact! [interaction]
-  (println "/mem " (js/Date.))
   (let [options (.-options interaction)
         subcommand (.getSubcommand options)]
     (go

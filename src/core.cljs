@@ -88,7 +88,9 @@
         (let [server-id (.. interaction -guild -id)
               server-name (.. interaction -guild -name)
               server-with-maps (.-rows (<p! (map-server/check-server-with-maps-exists server-id)))
-              user-roles (.. interaction -member -roles -cache)
+              user (.-member interaction)
+              username (.. user -user -username)
+              user-roles (.. user -roles -cache)
               channel-name (.toLowerCase (.. interaction -channel -name))]
           (init-collector-type-button interaction)
           (init-collector-type-select-menu interaction)
@@ -97,6 +99,13 @@
           (when (empty? server-with-maps)
             (<p! (map-server/insert-default-maps server-id)))
           (when (.isChatInputCommand interaction)
+            (println (str "===================================="
+                          "\nSERVER: " server-name
+                          "\nCHANNEL: " channel-name
+                          "\nUSER: " username
+                          "\nCOMMAND: " (.-commandName interaction)
+                          "\nDATE: " (js/Date.)
+                          "\n===================================="))
             (case (.-commandName interaction)
               "quote" (quote/interact! interaction)
               "make-teams" (make-teams/interact! interaction)
