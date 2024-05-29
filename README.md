@@ -5,7 +5,7 @@ CS 1.6 bot was created for play-cs.com game communities in Discord. Has differen
 ## Prerequisites
 Ubuntu: ```sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev```\
 OpenJDK 17.0.6\
-NodeJS v18.16.0\
+NodeJS v18.19.0\
 PostgreSQL 14.7
 ## Commands
 `/mem` Command with subcommands which using mem template to create mem with text:\
