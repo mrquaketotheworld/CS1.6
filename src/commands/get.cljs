@@ -1,5 +1,7 @@
 (ns commands.get
   (:require ["discord.js" :as discord]
+            ["axios" :as axios]
+            ["sharp" :as sharp]
             [cljs.core.async :refer [go]]
             [cljs.core.async.interop :refer-macros [<p!]]
             [canvas :as canvas-lib]
@@ -22,7 +24,6 @@
 
 (canvas-lib/registerFont "src/assets/Oswald-Regular.ttf" #js {:family "Oswald Regular"})
 (canvas-lib/registerFont "src/assets/Military Poster.ttf" #js {:family "Military Poster Regular"})
-(def nanax-logo (canvas/loadImage "src/assets/nanax_logo.png"))
 
 (def canvas (canvas-lib/createCanvas 688 276))
 (def context (.getContext canvas "2d"))
@@ -36,7 +37,7 @@
                   "Terminator" CYAN
                   "Legend" YELLOW
                   "Professional" PURPLE
-                  "Nanaxer" RED})
+                  "Impressive" RED})
 
 (defn fill-style [color]
   (set! (.-fillStyle context) color))
@@ -54,7 +55,7 @@
   (fill-style "white"))
 
 (defn make-context-second-column []
-  (fill-style (rank-colors "Nanaxer")))
+  (fill-style (rank-colors "Impressive")))
 
 (defn column-font-normal []
   (font "28px Oswald"))
@@ -99,21 +100,28 @@
                                                           "   D: " (player-info/in-code-string draws)
                                                           "   T: " (player-info/in-code-string total)
                                                           "   WR: " (player-info/in-code-string wr)
-                                                          "\n"))) "" maps-stats)]
-                (fill-style "black")
-                (.fillRect context 0 0 (.-width canvas) (.-height canvas))
-                (global-alpha 0.1)
-                (.drawImage context image 50 1 (.-naturalWidth image) (.-naturalHeight image))
+                                                          "\n"))) "" maps-stats)
+                    bg (<p! (canvas/loadImage (str "src/assets/bg/bg" (rand-int 12) ".jpg")))]
+
+                (.drawImage context bg 0 0 (.-width canvas) (.-height canvas))
+                (set! (.-shadowOffsetX context) 1)
+                (set! (.-shadowOffsetY context) 1)
+                (set! (.-shadowColor context) "black")
+                (set! (.-shadowBlur context) 0)
+
+                (.drawImage context image 32 212 32 32)
                 (global-alpha 1)
                 (column-font-normal)
                 (fill-style "white")
 
                 (make-context-first-column)
                 (fill-text "Team" 239 56)
+                (font "18px Oswald")
+                (fill-text server-name 32 268)
+                (column-font-normal)
                 (make-context-second-column)
                 (format-team team)
                 (fill-text (use-set team) 317 56)
-                (column-font-normal)
 
                 (make-context-first-column)
                 (fill-text "Points" 239 91)
@@ -155,10 +163,14 @@
 
                 (fill-style "white")
                 (font "43px \"Oswald\"")
-                (fill-text (str "#" player-rating) 32 244)
+                (fill-text (str "#" player-rating) 72 244)
+                (set! (.-shadowOffsetX context) 0)
+                (set! (.-shadowOffsetY context) 0)
                 (let [image (<p! (canvas-lib/loadImage
                                   (.displayAvatarURL user #js {:extension "jpg"})))]
                   (.drawImage context image 32 32 128 128)
+                  (set! (.-shadowOffsetX context) 3)
+                  (set! (.-shadowOffsetY context) 3)
                   (font "58px \"Military Poster\"")
                   (fill-style rank-color)
                   (fill-text username 104 180)
@@ -174,4 +186,11 @@
 
 (defn interact! [interaction]
   (println "/get " (js/Date.))
-  (.then nanax-logo (on-first-image-load interaction)))
+  (go (try
+        (let [image-response (<p! (.get axios (.. interaction -guild (iconURL)) #js {:responseType "arraybuffer"}))
+              image (<p! (.. (sharp (.-data image-response)) (toFormat "png") (toBuffer)))]
+          (.then (canvas/loadImage image) (on-first-image-load interaction)))
+
+        (catch js/Error e (println "ERROR interact!" e)))))
+
+

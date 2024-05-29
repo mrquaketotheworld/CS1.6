@@ -129,6 +129,5 @@
 (defn main [& args]
   (case (nth args 0)
     "register" (deploy/register-commands)
-    "register-guild" (deploy/register-guild-commands)
     "init-tables" (init-tables/init-tables)
     (println "Start")))

@@ -36,6 +36,6 @@
                      "   T: " (in-code-string total)
                      "   WR: " (in-code-string win-rate)
                      "\n")))
-          (<p! (.reply interaction #js {:content @description})))
+          (<p! (.reply interaction #js {:content (if (= @description "") "No data." @description)})))
         (catch js/Error e (println "ERROR interact top" e)))))
 
