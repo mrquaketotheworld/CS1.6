@@ -25,7 +25,6 @@
 
 (def state (atom {:button-collectors {} :select-menu-collectors {} :user-select-collectors {}}))
 
-(def CHANNEL_BOT "bot")
 (def CHANNEL_SCORE "score")
 (def ROLE_SCORE "score")
 
@@ -119,13 +118,9 @@
                                                             " You need to have **" ROLE_SCORE "** role.")
                                               :ephemeral true})))
                      (<p! (wrong-channel-command-reply interaction CHANNEL_SCORE)))
-              "get" (if (= channel-name CHANNEL_BOT)
-                      (get-command/interact! interaction)
-                      (<p! (wrong-channel-command-reply interaction CHANNEL_BOT)))
+              "get" (get-command/interact! interaction)
               "set" (set-command/interact! interaction)
-              "top" (if (= channel-name CHANNEL_BOT)
-                      (top/interact interaction)
-                      (<p! (wrong-channel-command-reply interaction CHANNEL_BOT)))
+              "top" (top/interact interaction)
               "mem" (mem/interact! interaction)
               "coin" (coin/interact! interaction)
               "help" (help/interact! interaction))))
@@ -139,4 +134,5 @@
   (case (nth args 0)
     "register" (deploy/register-commands)
     "init-tables" (init-tables/init-tables)
+    "delete-guild-commands" (deploy/delete-guild-commands)
     (println "Start")))

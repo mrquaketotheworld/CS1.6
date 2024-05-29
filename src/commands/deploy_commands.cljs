@@ -1,6 +1,6 @@
 (ns commands.deploy-commands
   (:require
-   [config :refer [TOKEN CLIENT_ID]]
+   [config :refer [TOKEN CLIENT_ID GUILD]]
    ["discord.js" :as discord]
    [commands.quote :as quote]
    [commands.go :as go-command]
@@ -23,3 +23,9 @@
       (put (.applicationCommands discord/Routes CLIENT_ID) #js {:body (clj->js commands)})
       (then #(println "Register commands SUCCESS!"))
       (catch #(println "ERROR register-commands deploy_commands" %))))
+
+(defn delete-guild-commands []
+  (.. rest-api
+      (put (.applicationGuildCommands discord/Routes CLIENT_ID GUILD) #js {:body #js []})
+      (then #(println "delete-guild-commands commands SUCCESS!"))
+      (catch #(println "ERROR delete-guild-commands deploy_commands" %))))
