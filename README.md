@@ -31,3 +31,10 @@ PostgreSQL 14.7
 
 `/top` Shows the top 10 players:\
 ![top](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/ba44e150-0885-4bc7-8971-f37c07a5db47)
+
+`/coin` Toss a coin:\
+![Screenshot from 2024-05-29 15-23-37](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/075b0590-f182-4a95-947e-fb21e8a2f9b8)
+
+`/help` List of all commands:\
+![Screenshot from 2024-05-29 15-23-16](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/d9468bb8-6a72-4429-a5a6-3821db835055)
+
