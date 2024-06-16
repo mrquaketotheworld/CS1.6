@@ -1,6 +1,6 @@
 ![Screenshot from 2024-05-25 13-25-18](https://github.com/mrquaketotheworld/CS1.6/assets/53916002/51ae54c1-79f4-4d7c-8b64-7aaa79ed15f7)
 
-# CS1.6
+# CS 1.6
 CS 1.6 bot was created for play-cs.com game communities in Discord. Has different commands such as rating, voting and others.
 ## Prerequisites
 Ubuntu: ```sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev```\
