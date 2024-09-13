@@ -10,6 +10,10 @@
                              :idleTimeoutMillis 30000
                              :connectionTimeoutMillis 2000}))
 
+(.on pool "error" (fn [err]
+                    (println (js/Date.) "ERROR pool" err)
+                    (.exit js/process -1)))
+
 (defn begin-transaction [client]
   (.query client "BEGIN"))
 
