@@ -6,7 +6,9 @@
                              :host PG_HOST
                              :database PG_DATABASE
                              :password PG_PASSWORD
-                             :port PG_PORT}))
+                             :port PG_PORT
+                             :idleTimeoutMillis 30000
+                             :connectionTimeoutMillis 2000}))
 
 (defn begin-transaction [client]
   (.query client "BEGIN"))
