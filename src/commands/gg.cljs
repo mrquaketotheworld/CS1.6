@@ -229,9 +229,11 @@
                                          :components #js []})))
 
                     (<p! (db/commit-transaction client))
-                    (catch js/Error e (do (println "ERROR handle-collector-event-button! gg" e)
+                    (catch js/Error e (do (println "ERROR handle-collector-event-button! save gg" e)
                                           (<p! (db/rollback-transaction client))))
-                    (finally (.release client))))))
+                    (finally (do
+                               (println "RELEASE POOL" (js/Date.))
+                               (.release client)))))))
           (catch js/Error e (println "ERROR handle-collector-event-button! gg" e))))
     (reply-wrong-interaction interaction)))
 
