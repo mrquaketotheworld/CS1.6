@@ -109,7 +109,7 @@
               "quote" (quote/interact! interaction)
               "make-teams" (make-teams/interact! interaction)
               "go" (go-command/interact! interaction)
-              "gg" (if (= channel-name CHANNEL_SCORE)
+              "gg" (if (or (= channel-name CHANNEL_SCORE) (= channel-name "📋・𝙎𝙘𝙤𝙧𝙚𝘽𝙤𝙖𝙧𝙙"))
                      (if (boolean (some #(= ROLE_SCORE (.toLowerCase (.-name (get % 1)))) user-roles))
                        (gg/interact! interaction)
                        (<p!
