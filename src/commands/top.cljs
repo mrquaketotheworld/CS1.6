@@ -27,7 +27,7 @@
                                                 (player "points")))]
               (swap! description str (discord/bold (player "dense_rank")) ". "
                      (discord/bold (.-displayName (<p! (.. interaction -guild -members (fetch (player "player_id"))))))
-                     "\n    Points: " (in-code-string (.toFixed (player "points") 2))
+                     "\n    Points: " (in-code-string (.toFixed (player "points") 1))
                      "   Rank: " (in-code-string rank-name)
                      "   W: " (in-code-string wins)
                      "   L: " (in-code-string losses)

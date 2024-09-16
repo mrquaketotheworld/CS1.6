@@ -128,7 +128,7 @@
               (fill-text (use-set team) 317 56)
 
               (render-column {:first-col-text "Points"
-                              :second-col-text (.toFixed player-points 2)
+                              :second-col-text (.toFixed player-points 1)
                               :first-col-coords [239 91]
                               :second-col-coords [317 91]})
 
