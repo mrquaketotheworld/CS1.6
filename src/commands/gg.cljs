@@ -114,7 +114,7 @@
   (reduce (fn [acc user-item]
             (let [user-id (first user-item)
                   user (second user-item)]
-              (if false
+              (if (.-bot user)
                 acc
                 (conj acc {:user-id user-id
                            :username (.-displayName user)}))))
