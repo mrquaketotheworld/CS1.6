@@ -144,96 +144,98 @@
                 team1-ids (map #(:user-id %) team1-users)
                 team2-ids (map #(:user-id %) team2-users)
                 users (concat team1-users team2-users)
-                server-id (.-guildId interaction)]
+                server-id (.-guildId interaction)
+                client (<p! (.connect db/pool))]
             (case custom-id
               "button-cancel"
               (do
+                (.release client)
+                (println "CANCEL: RELEASE POOL" (js/Date.))
                 (<p! (.deleteReply (:interaction match-info)))
                 (reset-interaction-in-state user-id))
               "button-save"
-              (let [client (<p! (.connect db/pool))]
-                (try
-                  (<p! (db/begin-transaction client))
-                  (doseq [user users]
-                    (let [user-id-iter (:user-id user)
-                          username (:username user)]
-                      (<p! (player/insert-player-if-not-exists client user-id-iter username))
-                      (let [player-server (.-rows (<p!
-                                                   (player-server-points/select-player-by-server
-                                                    client user-id-iter server-id)))]
-                        (when (empty? player-server)
-                          (<p! (player-server-points/insert-player
-                                client user-id-iter server-id))))))
-                  (let [team1-points
-                        (db-utils/get-formatted-rows
-                         (<p! (player-server-points/select-players-points
-                               client (clj->js team1-ids) server-id)))
-                        team2-points
-                        (db-utils/get-formatted-rows
-                         (<p! (player-server-points/select-players-points
-                               client (clj->js team2-ids) server-id)))
-                        team1-total-points (sum-players-points team1-points)
-                        team2-total-points (sum-players-points team2-points)
-                        elo-K-factor 160
-                        elo-basic (.. (elo/Elo. elo-K-factor)
-                                      (playerA team1-total-points)
-                                      (playerB team2-total-points))
-                        elo-result (.. (cond
-                                         (> team1-score team2-score) (.setWinnerA elo-basic)
-                                         (< team1-score team2-score) (.setWinnerB elo-basic)
-                                         :else (.setDraw elo-basic))
-                                       calculate
-                                       getResults)
-                        team1-points-elo-diff (- (first elo-result) team1-total-points)
-                        team2-points-elo-diff (- (second elo-result) team2-total-points)
-                        team1-points-to-every-player
-                        (calculate-points-for-one-player team1-points-elo-diff team1-users)
-                        team2-points-to-every-player
-                        (calculate-points-for-one-player team2-points-elo-diff team2-users)
-                        team1-id ((db-utils/get-first-formatted-row
-                                   (<p! (team/insert-generate-team-id client))) "id")
-                        team2-id ((db-utils/get-first-formatted-row
-                                   (<p! (team/insert-generate-team-id client))) "id")]
-                    (doseq [team1-player-id team1-ids]
-                      (<p! (player-server-points/update-player-points
-                            client team1-player-id server-id team1-points-to-every-player)))
-                    (doseq [team2-player-id team2-ids]
-                      (<p! (player-server-points/update-player-points
-                            client team2-player-id server-id team2-points-to-every-player)))
-                    (<p! (player-team-server/insert-team client
-                                                         (nth team1-ids 0)
-                                                         (nth team1-ids 1)
-                                                         (nth team1-ids 2)
-                                                         (nth team1-ids 3)
-                                                         (nth team1-ids 4)
-                                                         team1-id
-                                                         server-id))
-                    (<p! (player-team-server/insert-team client
-                                                         (nth team2-ids 0)
-                                                         (nth team2-ids 1)
-                                                         (nth team2-ids 2)
-                                                         (nth team2-ids 3)
-                                                         (nth team2-ids 4)
-                                                         team2-id
-                                                         server-id))
-                    (<p! (match/insert-match client map-select team1-score
-                                             team2-score team1-id team2-id))
-                    (reset-interaction-in-state user-id)
-                    (<p! (.update interaction
-                                  #js {:content nil
-                                       :embeds #js [(create-map-embed map-select)
-                                                    (create-team-embed team1-score team2-score
-                                                                       team1-usernames)
-                                                    (create-team-embed team2-score team1-score
-                                                                       team2-usernames)]
-                                       :components #js []})))
+              (go (try
+                    (<p! (db/begin-transaction client))
+                    (doseq [user users]
+                      (let [user-id-iter (:user-id user)
+                            username (:username user)]
+                        (<p! (player/insert-player-if-not-exists client user-id-iter username))
+                        (let [player-server (.-rows (<p!
+                                                     (player-server-points/select-player-by-server
+                                                      client user-id-iter server-id)))]
+                          (when (empty? player-server)
+                            (<p! (player-server-points/insert-player
+                                  client user-id-iter server-id))))))
+                    (let [team1-points
+                          (db-utils/get-formatted-rows
+                           (<p! (player-server-points/select-players-points
+                                 client (clj->js team1-ids) server-id)))
+                          team2-points
+                          (db-utils/get-formatted-rows
+                           (<p! (player-server-points/select-players-points
+                                 client (clj->js team2-ids) server-id)))
+                          team1-total-points (sum-players-points team1-points)
+                          team2-total-points (sum-players-points team2-points)
+                          elo-K-factor 160
+                          elo-basic (.. (elo/Elo. elo-K-factor)
+                                        (playerA team1-total-points)
+                                        (playerB team2-total-points))
+                          elo-result (.. (cond
+                                           (> team1-score team2-score) (.setWinnerA elo-basic)
+                                           (< team1-score team2-score) (.setWinnerB elo-basic)
+                                           :else (.setDraw elo-basic))
+                                         calculate
+                                         getResults)
+                          team1-points-elo-diff (- (first elo-result) team1-total-points)
+                          team2-points-elo-diff (- (second elo-result) team2-total-points)
+                          team1-points-to-every-player
+                          (calculate-points-for-one-player team1-points-elo-diff team1-users)
+                          team2-points-to-every-player
+                          (calculate-points-for-one-player team2-points-elo-diff team2-users)
+                          team1-id ((db-utils/get-first-formatted-row
+                                     (<p! (team/insert-generate-team-id client))) "id")
+                          team2-id ((db-utils/get-first-formatted-row
+                                     (<p! (team/insert-generate-team-id client))) "id")]
+                      (doseq [team1-player-id team1-ids]
+                        (<p! (player-server-points/update-player-points
+                              client team1-player-id server-id team1-points-to-every-player)))
+                      (doseq [team2-player-id team2-ids]
+                        (<p! (player-server-points/update-player-points
+                              client team2-player-id server-id team2-points-to-every-player)))
+                      (<p! (player-team-server/insert-team client
+                                                           (nth team1-ids 0)
+                                                           (nth team1-ids 1)
+                                                           (nth team1-ids 2)
+                                                           (nth team1-ids 3)
+                                                           (nth team1-ids 4)
+                                                           team1-id
+                                                           server-id))
+                      (<p! (player-team-server/insert-team client
+                                                           (nth team2-ids 0)
+                                                           (nth team2-ids 1)
+                                                           (nth team2-ids 2)
+                                                           (nth team2-ids 3)
+                                                           (nth team2-ids 4)
+                                                           team2-id
+                                                           server-id))
+                      (<p! (match/insert-match client map-select team1-score
+                                               team2-score team1-id team2-id))
+                      (reset-interaction-in-state user-id)
+                      (<p! (.update interaction
+                                    #js {:content nil
+                                         :embeds #js [(create-map-embed map-select)
+                                                      (create-team-embed team1-score team2-score
+                                                                         team1-usernames)
+                                                      (create-team-embed team2-score team1-score
+                                                                         team2-usernames)]
+                                         :components #js []})))
 
-                  (<p! (db/commit-transaction client))
-                  (catch js/Error e (do (println "ERROR handle-collector-event-button! save gg" e)
-                                        (<p! (db/rollback-transaction client))))
-                  (finally (do
-                             (println "RELEASE POOL" (js/Date.))
-                             (.release client)))))))
+                    (<p! (db/commit-transaction client))
+                    (catch js/Error e (do (println "ERROR handle-collector-event-button! save gg" e)
+                                          (<p! (db/rollback-transaction client))))
+                    (finally (do
+                               (println "RELEASE POOL" (js/Date.))
+                               (.release client)))))))
           (catch js/Error e (println "ERROR handle-collector-event-button! gg" e))))
     (reply-wrong-interaction interaction)))
 
