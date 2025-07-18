@@ -119,7 +119,7 @@
 (defn create-content [interaction-id]
   (let [maps (get-maps interaction-id)
         title (if (:is-disabled (first maps))
-                (str ":checkered_flag: **WINNER:** " (calculate-winner-map interaction-id) (discord/spoiler " Support bot: https://www.donationalerts.com/r/st4rstayhard"))
+                (str ":checkered_flag: **WINNER:** " (calculate-winner-map interaction-id))
                 ":triangular_flag_on_post: **VOTE FOR THE MAP PLEASE**, **1 MINUTE TO VOTE**")
         users-list (create-users-list maps)]
     (str title "\n" users-list)))
